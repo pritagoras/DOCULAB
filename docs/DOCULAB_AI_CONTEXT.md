@@ -53,6 +53,8 @@ Reglas:
 - Usar IDs estables, únicos, simples y en kebab-case.
 - No duplicar secciones ni inventar componentes que no aporten valor.
 - Los modelos propuestos por IA deben respetar estrictamente el JSON solicitado por el cliente. Cuando se pida solo JSON, devolver JSON válido sin Markdown, fences ni comentarios.
+- La biblioteca permite abrir una previsualización de cualquier modelo y editar cualquier modelo cargado, incluidos los 12 modelos iniciales heredados. Los modelos heredados se convierten al abrirlos en el constructor: cada elemento de su propiedad `structure` separado por punto y coma pasa a ser un componente independiente, y su `prompt` se conserva como instrucciones generales.
+- Al guardar una edición, el modelo actualizado se conserva como plantilla modular local y reemplaza al original en la biblioteca mediante su mismo `id`; no se altera el archivo original del repositorio ni se publica automáticamente.
 
 ## 5. Componentes disponibles
 El catálogo base actual contiene:
