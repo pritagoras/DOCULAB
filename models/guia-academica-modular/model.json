@@ -1,0 +1,68 @@
+{
+  "schema": "doculab.model/v1",
+  "id": "guide-academic-modular",
+  "name": "Guía académica modular",
+  "category": "Académicos",
+  "description": "Plantilla reutilizable para organizar material de estudio con secciones opcionales.",
+  "instructions": "Trabajá exclusivamente con las fuentes proporcionadas. No inventes citas, datos ni conceptos. Conservá las distinciones importantes y señalá la información faltante.",
+  "components": [
+    {
+      "id": "cover",
+      "title": "Portada",
+      "description": "Título y datos generales.",
+      "instruction": "Preparar una portada sobria con título y subtítulo.",
+      "enabled": true,
+      "order": 0
+    },
+    {
+      "id": "objectives",
+      "title": "Objetivos de aprendizaje",
+      "description": "Propósitos concretos de la guía.",
+      "instruction": "Formular objetivos claros y vinculados al contenido.",
+      "enabled": true,
+      "order": 1
+    },
+    {
+      "id": "index",
+      "title": "Mapa de estudio",
+      "description": "Organización jerárquica del contenido.",
+      "instruction": "Construir un mapa numerado de unidades y conceptos.",
+      "enabled": true,
+      "order": 2
+    },
+    {
+      "id": "development",
+      "title": "Desarrollo conceptual",
+      "description": "Explicación detallada y articulada.",
+      "instruction": "Explicar conceptos y relaciones, evitando repeticiones.",
+      "enabled": true,
+      "order": 3
+    },
+    {
+      "id": "question-bank",
+      "title": "Banco de preguntas",
+      "description": "Preguntas y respuestas para repaso.",
+      "instruction": "Crear preguntas y respuestas fundamentadas en las fuentes.",
+      "enabled": false,
+      "order": 4
+    },
+    {
+      "id": "glossary",
+      "title": "Glosario",
+      "description": "Definiciones esenciales.",
+      "instruction": "Definir términos técnicos y sus relaciones.",
+      "enabled": true,
+      "order": 5
+    },
+    {
+      "id": "bibliography",
+      "title": "Bibliografía",
+      "description": "Referencias de las fuentes.",
+      "instruction": "Listar solo referencias proporcionadas, sin completar datos inventados.",
+      "enabled": true,
+      "order": 6
+    }
+  ],
+  "version": 1,
+  "updated": "2026-10-31T00:00:00Z"
+}
