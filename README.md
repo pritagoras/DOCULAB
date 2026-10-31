@@ -1,44 +1,68 @@
 # DOCULAB
 
-**Document Studio** — biblioteca modular de modelos y herramientas para preparar documentos con ayuda de modelos de lenguaje.
+**Document Studio** — biblioteca de modelos documentales modulares, reutilizables y versionables.
+
+## Concepto
+
+DOCULAB separa el diseño asistido por IA del uso cotidiano de los modelos:
+
+- La IA puede crear, revisar o ampliar una plantilla.
+- La plantilla se guarda como JSON y define sus componentes, orden, instrucciones y estado activo.
+- Una plantilla guardada se puede abrir, previsualizar y utilizar sin conectarse a ningún modelo de lenguaje.
+- Los modelos versionados en Git se cargan desde `models/index.json`.
+
+## Modelos versionados en Git
+
+La estructura es:
+
+```text
+models/
+  index.json
+  guia-universitaria/
+    model.json
+  informe-academico/
+    model.json
+```
+
+Para incorporar un modelo nuevo:
+
+1. En DOCULAB, abrir **Constructor de modelos**.
+2. Crear o editar los componentes y revisar la previsualización.
+3. Pulsar **Guardar modelo** para conservarlo en el navegador.
+4. Pulsar **Descargar modelo JSON**. Crear una carpeta dentro de `models/` y guardar el archivo como `model.json`.
+5. Pulsar **Descargar índice Git** y reemplazar `models/index.json` con ese archivo.
+6. Abrir GitHub Desktop, revisar los dos archivos nuevos/modificados y hacer commit/push.
+
+No hace falta configurar un token de GitHub ni conectar DOCULAB con la API de GitHub. Los modelos publicados se cargan desde el propio repositorio al abrir la aplicación.
+
+## IA opcional
+
+La IA solo interviene cuando se quiere generar o modificar contenido o diseñar modelos. Los modelos documentales guardados no dependen de ella.
+
+Proveedores del puente local:
+- Ollama local.
+- OpenAI API.
+- Google Gemini API.
+- Endpoints compatibles con la API de OpenAI.
+
+Las claves API se envían al puente local para la solicitud y no se guardan en el repositorio. No se deben incluir claves en archivos públicos.
 
 ## Publicación
 
-DOCULAB es una aplicación estática y funciona en GitHub Pages:
+DOCULAB es una aplicación estática compatible con GitHub Pages:
 
-1. En el repositorio, abrir **Settings → Pages**.
-2. En **Build and deployment**, elegir **Deploy from a branch**.
+1. Abrir **Settings → Pages**.
+2. Elegir **Deploy from a branch**.
 3. Seleccionar rama **main** y carpeta **/(root)**.
-4. Guardar y esperar a que GitHub complete el despliegue.
+4. Guardar y esperar el despliegue.
 
 URL esperada: https://pritagoras.github.io/DOCULAB/
 
-## Funciones del MVP
-
-- Biblioteca inicial con 12 modelos de producción documental.
-- Búsqueda y filtros por categoría.
-- Vista de prompts y estructuras de cada modelo.
-- Constructor de modelos personalizados.
-- Estudio para ensamblar prompts a partir de fuentes e indicaciones.
-- Proyectos y biblioteca guardados localmente en el navegador.
-- Importación y exportación de biblioteca JSON.
-- Exportación HTML e impresión / Guardar como PDF.
-- PWA básica.
-
-## Limitaciones actuales
-
-- No extrae automáticamente el texto de PDF o DOCX; se puede pegar el texto en el campo de fuentes.
-- El borrador sin IA conserva y ordena el material; no realiza una articulación inteligente.
-- La impresión a PDF usa el diálogo del navegador.
-- Los proyectos se guardan en el navegador y dispositivo actuales; no hay sincronización en la nube.
-- GitHub Pages aloja solo la interfaz estática. No ejecuta Python ni modelos locales.
-- La conexión IA local se recomienda al abrir DOCULAB desde localhost. El puente incluido restringe CORS a localhost.
-
 ## Ejecutar localmente
 
-Servir la carpeta raíz:
+Desde la carpeta raíz del repositorio:
 
-```bash
+```powershell
 python -m http.server 8080
 ```
 
@@ -46,7 +70,7 @@ Abrir http://localhost:8080.
 
 ### Puente local de IA (opcional)
 
-Requiere Python 3.10+ y Ollama para el proveedor local.
+Requiere Python 3.10+.
 
 ```powershell
 cd local_server
@@ -56,6 +80,19 @@ pip install -r requirements.txt
 uvicorn server:app --host 127.0.0.1 --port 8000
 ```
 
-En Ollama, instalar un modelo y seleccionarlo en DOCULAB (por ejemplo, qwen2.5:7b). El servidor consulta Ollama en http://localhost:11434.
+Para Ollama, iniciar Ollama y descargar un modelo (por ejemplo, `ollama pull qwen2.5:7b`). En DOCULAB seleccionar Ollama y el nombre exacto del modelo.
 
-Para proveedores compatibles con OpenAI, configurar OPENAI_BASE_URL y OPENAI_API_KEY como variables de entorno del servidor. No publicar claves en GitHub.
+Para OpenAI o Gemini, elegir el proveedor correspondiente, ingresar la clave API en Configuración y especificar el identificador del modelo. La clave no se guarda en localStorage ni en Git.
+
+## Alcance actual
+
+- Biblioteca inicial de modelos.
+- Constructor modular con activar/desactivar y reordenar componentes.
+- Previsualización de estructura.
+- Guardado local de plantillas y proyectos.
+- Importación y exportación JSON.
+- Carga de plantillas versionadas en Git.
+- Generación de documentos con proveedores IA configurados.
+- Exportación HTML e impresión / Guardar como PDF.
+
+La importación directa de PDF/DOCX y la sincronización automática no están incluidas todavía.
