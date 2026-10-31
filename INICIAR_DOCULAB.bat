@@ -17,7 +17,7 @@ if not exist "local_server\.venv\Scripts\python.exe" (
   if errorlevel 1 goto error
 )
 echo Iniciando servidor de IA local...
-start "DOCULAB - IA local" cmd /k "cd /d ""%~dp0local_server"" && ..\.venv\Scripts\python.exe -m uvicorn server:app --host 127.0.0.1 --port 8000"
+start "DOCULAB - IA local" cmd /k "cd /d ""%~dp0local_server"" && .\.venv\Scripts\python.exe -m uvicorn server:app --host 127.0.0.1 --port 8000"
 echo Iniciando aplicacion web...
 start "DOCULAB - Aplicacion" cmd /k "cd /d ""%~dp0"" && py -m http.server 8080"
 timeout /t 2 /nobreak >nul
