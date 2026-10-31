@@ -74,3 +74,5 @@
  .editor-area#documentOutput{display:none!important}.print-document{max-width:none;min-height:0;padding:0;box-shadow:none}
  .print-section{break-inside:avoid}
 }
+/* Biblioteca: preview y edición de cualquier plantilla */
+.card-bottom{justify-content:flex-start;gap:12px;flex-wrap:wrap}.model-modal-preview{background:#f1f3f6;border:1px solid var(--line);border-radius:8px;padding:18px;margin:16px 0}.model-modal-page{background:#fff;max-width:520px;margin:auto;padding:28px 32px;box-shadow:0 2px 12px #1b274010}.model-modal-page h2{text-align:center;margin:24px 0 8px;font:700 20px Manrope}.model-modal-page .preview-description{text-align:center;font-size:11px;color:#8a94a3}.model-modal-page ol{margin:24px 0 0;padding-left:22px;color:#465164;font:12px/2 Georgia,serif}.model-modal-page li{padding-left:4px}.modal-actions{margin-bottom:4px}
