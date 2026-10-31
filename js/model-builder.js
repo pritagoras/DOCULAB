@@ -59,6 +59,22 @@ async function loadRepositoryModels(){
 }
 function exportModel(){const m=current();if(!m.name){toast("Poné un nombre antes de exportar");return}const path="models/"+slug(m.name)+"/model.json";m.id=m.id||"model_"+slug(m.name);download("model.json",JSON.stringify(m,null,2),"application/json");$("#modelSaveStatus").textContent="Archivo exportado. Guardalo en "+path+" dentro del repositorio."}
 function exportIndex(){const m=current();if(!m.name){toast("Poné un nombre antes de exportar");return}const path="models/"+slug(m.name)+"/model.json";const entries=[...repositoryEntries.filter(x=>x.path!==path),{id:m.id,name:m.name,path}].sort((a,b)=>a.name.localeCompare(b.name));const manifest={schema:"doculab.models-index/v1",updated:new Date().toISOString(),models:entries};repositoryEntries=entries;download("index.json",JSON.stringify(manifest,null,2),"application/json");$("#modelSaveStatus").textContent="Copiá este index.json a models/index.json en el repositorio."}
+async function designWithAI(){
+ const provider=$("#aiProvider")?.value||"none";if(provider==="none"){toast("Elegí un proveedor en Configuración primero");return}
+ const name=$("#modelName").value.trim()||"Modelo documental";const category=$("#modelCategory").value.trim()||"Personalizados";const description=$("#modelDescription").value.trim();const rules=$("#modelPrompt").value.trim();
+ const prompt="Diseñá una plantilla documental modular para DOCULAB. Devolvé SOLO JSON válido, sin Markdown ni explicaciones, con esta estructura: {\\"schema\\":\\"doculab.model/v1\\",\\"id\\":\\"model-id\\",\\"name\\":string,\\"category\\":string,\\"description\\":string,\\"instructions\\":string,\\"components\\":[{\\"id\\":string,\\"title\\":string,\\"description\\":string,\\"instruction\\":string,\\"enabled\\":boolean,\\"order\\":number}],\\"version\\":1}. Cada componente debe ser una sección independiente que pueda activarse o desactivarse. Usá IDs simples en kebab-case, no inventes componentes redundantes y proponé entre 4 y 10 componentes. Modelo: "+name+". Categoría: "+category+". Descripción: "+description+". Reglas indicadas: "+rules+".";
+ const button=$("#designModelWithAI");button.disabled=true;button.textContent="Diseñando…";
+ try{
+  const endpoint=$("#aiEndpoint").value.replace(/\\/$/,"");
+  const response=await fetch(endpoint+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({provider,model:$("#aiModel").value,prompt,api_key:$("#aiKey").value})});
+  if(!response.ok)throw Error("HTTP "+response.status);
+  const data=await response.json();let raw=String(data.text||"").trim().replace(/^\`\`\`(?:json)?\\s*/i,"").replace(/\\s*\`\`\`$/,"");
+  const model=JSON.parse(raw);if(!Array.isArray(model.components))throw Error("La respuesta no contiene componentes");
+  model.schema="doculab.model/v1";model.id=editingId||model.id||"model_"+slug(name);model.name=model.name||name;model.category=model.category||category;model.description=model.description||description;model.instructions=model.instructions||rules;model.components=model.components.map((c,i)=>({...c,enabled:c.enabled!==false,order:i}));
+  fill(model);$("#modelSaveStatus").textContent="Propuesta recibida. Revisá los componentes y guardá el modelo cuando esté listo.";toast("Estructura propuesta por IA");
+ }catch(e){toast("No se pudo diseñar el modelo: "+e.message)}
+ finally{button.disabled=false;button.textContent="Proponer estructura con IA"}
+}
 function importModel(file){const r=new FileReader();r.onload=()=>{try{const m=JSON.parse(r.result);if(m.schema!=="doculab.model/v1"||!Array.isArray(m.components))throw Error("Formato de modelo no reconocido");fill(m);toast("Modelo importado al editor")}catch(e){toast("No se pudo importar: "+e.message)}};r.readAsText(file)}
 function init(){
  if(!$("#componentList"))return;
@@ -67,7 +83,7 @@ function init(){
  $("#componentList").addEventListener("change",e=>{const row=e.target.closest("[data-index]");if(!row||!e.target.matches("[data-toggle]"))return;components[Number(row.dataset.index)].enabled=e.target.checked;renderComponents()});
  ["modelName","modelCategory","modelDescription"].forEach(id=>$("#"+id).addEventListener("input",renderPreview));
  $("#addComponent").onclick=()=>{const id=$("#addComponentSelect").value,c=CATALOG.find(x=>x.id===id);if(!c)return;components.push({...c,enabled:true});renderComponents()};
- $("#saveModel").onclick=saveModel;$("#exportModelJson").onclick=exportModel;$("#exportModelIndex").onclick=exportIndex;
+ $("#saveModel").onclick=saveModel;$("#designModelWithAI").onclick=designWithAI;$("#exportModelJson").onclick=exportModel;$("#exportModelIndex").onclick=exportIndex;
  $("#importModelJson").onchange=e=>{const f=e.target.files?.[0];if(f)importModel(f);e.target.value=""};
  $("#clearModelForm").onclick=()=>{if(components.length&&$("#modelName").value&&!confirm("¿Empezar un modelo nuevo? Los cambios no guardados se perderán."))return;fill(null)};
 }
