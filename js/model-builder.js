@@ -93,7 +93,7 @@ async function designModelFromPDF(){
   const name=$("#modelName").value.trim()||file.name.replace(/\.pdf$/i,"").replace(/[_-]+/g," ");
   const category=$("#modelCategory").value.trim()||"Documentación";
   const rules=$("#modelPrompt").value.trim();
-  const prompt=`Analizá el documento fuente y construí una plantilla modular DOCULAB que reproduzca su estructura editorial y funcional. No redactes el documento final: inferí la arquitectura reutilizable del modelo. Identificá títulos, niveles jerárquicos, orden de secciones, subsecciones recurrentes, tablas, actividades, cuadros, bibliografía, anexos y convenciones de formato que realmente aparezcan. Agrupá subapartados cuando convenga, pero no aplanes la jerarquía ni inventes secciones. Cada componente debe poder activarse/desactivarse independientemente. En "preview" poné una muestra breve que represente el tipo de contenido de esa sección, sin copiar largos fragmentos. Devolvé SOLO JSON válido, sin Markdown, con este esquema exacto: {"schema":"doculab.model/v1","id":"model-id","name":"nombre","category":"categoría","description":"descripción","instructions":"instrucciones reutilizables","components":[{"id":"slug-simple","title":"título fiel a la fuente","description":"función de la sección","instruction":"instrucciones para producir esa sección","preview":"muestra breve","enabled":true,"order":0}],"version":1}. Usá entre 4 y 18 componentes según la complejidad real. Si hay numeración o jerarquía explícita, preservala en títulos/descripciones. No inventes autores, citas ni metadatos. Nombre sugerido: ${name}. Categoría: ${category}. Reglas del usuario: ${rules||"Conservar con fidelidad la estructura del PDF y convertirla en una plantilla reutilizable."}.\n\nDOCUMENTO FUENTE (extraído del PDF):\n${source.slice(0,100000)}`;
+  const prompt=buildExternalPdfPrompt()+`\n\nTEXTO EXTRAÍDO COMO APOYO PARA IDENTIFICAR ROLES VISUALES (NO CONSERVAR TEMA NI CONCEPTOS):\n${source.slice(0,100000)}`
   button.textContent="Diseñando modelo…";status.textContent="La IA está reconstruyendo la estructura del PDF…";
   const response=await fetch(endpoint+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({provider,model:$("#aiModel").value,prompt,api_key:""})});
   const result=await response.json();if(!response.ok)throw Error(result.detail||"La IA no pudo analizar el documento");
@@ -106,46 +106,52 @@ async function designModelFromPDF(){
  finally{button.disabled=false;button.textContent="Analizar PDF y crear modelo"}
 }
 function buildExternalPdfPrompt(){
- return `Actuá como especialista en diseño documental y arquitectura de plantillas. Analizá el PDF adjunto y reconstruí su estructura como un modelo modular reutilizable para DOCULAB.
+ return `Actuá como especialista en análisis de diseño editorial, maquetación y sistemas de diseño documental. Analizá el PDF adjunto EXCLUSIVAMENTE como objeto gráfico y editorial. Tu tarea es reconstruir su SISTEMA VISUAL Y TOPOGRÁFICO para convertirlo en una plantilla DOCULAB reutilizable con cualquier tema o contenido.
+
+REGLA CENTRAL — SEPARACIÓN TOTAL ENTRE FORMA Y CONTENIDO
+NO construyas una plantilla temática. NO conserves los conceptos, la materia, el vocabulario, los títulos específicos, los autores, los ejemplos ni los datos del PDF. Ignorá el significado semántico del texto. Si el PDF trata sobre biología, filosofía, derecho o cualquier otra materia, eso es irrelevante: el modelo resultante debe servir para escribir sobre cualquier tema.
+Usá los textos visibles únicamente como muestras para detectar niveles tipográficos, longitudes aproximadas, estilos de títulos, párrafos, listas, epígrafes, tablas y otros roles visuales. En los nombres de componentes utilizá nombres funcionales genéricos como "Título principal", "Subtítulo", "Cuerpo de texto", "Lista numerada", "Tabla", "Encabezado", "Pie de página", etc. Nunca nombres de componentes con conceptos de la materia del PDF.
 
 OBJETIVO
-No quiero que redactes un documento nuevo ni que resumas el contenido. Quiero que reproduzcas la ESTRUCTURA del PDF para convertirla en una plantilla editable: organización, jerarquías, orden, tipos de sección y convenciones recurrentes.
+Inferí y describí un sistema de diseño reproducible que permita crear documentos NUEVOS con la misma apariencia, distribución y ritmo editorial del PDF de referencia, aunque el contenido sea completamente distinto.
 
-ANALIZÁ
-- Portada, encabezados, subtítulos y niveles de títulos.
-- Índice y numeración, si existen.
-- Secciones, subsecciones y su orden exacto.
-- Tablas, cuadros comparativos, actividades, preguntas, ejercicios, fichas, glosarios, bibliografía y anexos.
-- Elementos recurrentes y patrones de organización.
-- Instrucciones, campos o espacios que se repiten.
-- Diferenciá las secciones reales del documento de los números de página, encabezados/pies repetidos y elementos decorativos.
+ANALIZÁ Y REGISTRÁ CON LA MAYOR PRECISIÓN POSIBLE
+1. FORMATO FÍSICO: tamaño de página (A4, A5, carta u otro; si no se puede determinar, estimarlo y marcarlo como estimación), orientación, proporciones, márgenes superior/inferior/interior/exterior, área útil, columnas y medianiles.
+2. RETÍCULA Y COMPOSICIÓN: alineación, distribución de bloques, ancho de texto, ubicación de títulos, cajas, imágenes, tablas, separadores, espacios en blanco, saltos de página y consistencia entre páginas.
+3. TIPOGRAFÍA: familias o rasgos tipográficos observables, tamaños aproximados en pt, pesos, estilos, interlineado, tracking si es perceptible, jerarquías y usos de cada estilo.
+4. ESPACIADO: distancias antes/después de títulos y párrafos, separación entre bloques, sangrías de primera línea, sangrías de listas, padding interno de tablas/cajas y ritmo vertical.
+5. COLOR Y RECURSOS: paleta aproximada, fondos, líneas, grosores de bordes, viñetas, numeración, destacados, recuadros, iconografía y tratamiento de imágenes.
+6. ELEMENTOS REPETIDOS: encabezados y pies, folios, numeración, títulos corrientes, cabeceras de tabla y otros elementos constantes.
+7. PATRONES DE BLOQUES: identificá los tipos de bloques visuales que realmente aparecen y describí su apariencia y reglas de uso, sin conservar el asunto que contienen.
+8. VARIACIONES: si hay portada, índice, páginas de desarrollo, páginas con tablas o anexos que usen composiciones diferentes, describí cada variante como un patrón de página. No confundas una página excepcional con una regla global.
 
-REGLAS
-1. Conservá la jerarquía y el orden del PDF. No aplanes subsecciones importantes.
-2. No inventes secciones que no estén justificadas por el documento.
-3. Convertí cada bloque funcional en un componente independiente cuando tenga sentido.
-4. Para cada componente describí qué función cumple y qué instrucciones debería seguir una IA al generar un documento nuevo con esa plantilla.
-5. En "preview" escribí una muestra breve que represente el formato, no copies párrafos extensos del PDF.
-6. Si el PDF contiene preguntas, tablas o actividades, indicá su formato y estructura; no las conviertas automáticamente en texto corrido.
-7. Conservá numeración y rótulos originales cuando sean estructurales.
-8. Si no podés determinar algo, indicálo en la descripción en vez de inventarlo.
-9. Devolvé exclusivamente JSON válido. Sin Markdown, sin bloques de código y sin comentarios.
+INSTRUCCIONES PARA LOS COMPONENTES
+- Los componentes representan ROLES DE MAQUETACIÓN, no temas ni capítulos del PDF.
+- Usá títulos genéricos y transferibles: "Título de nivel 1", "Título de nivel 2", "Texto principal", "Lista con viñetas", "Tabla de datos", "Nota destacada", "Pie de página".
+- La descripción debe explicar apariencia, jerarquía y ubicación.
+- La instrucción debe ser operativa: indicar tamaño, peso, espaciado, alineación, sangría, ancho, bordes, comportamiento y cuándo usar ese rol.
+- Los previews deben usar contenido de relleno neutro, por ejemplo "Título de ejemplo", "Texto de muestra para este bloque", "Elemento de lista", "Dato de ejemplo". No reutilices conceptos ni frases del PDF.
+- Incluí un componente global de configuración de página/retícula y componentes separados para los roles tipográficos y bloques visuales que correspondan.
+- Si existen patrones de página distintos (por ejemplo portada y páginas interiores), representalos como componentes o variantes claramente identificadas.
+- No inventes valores exactos cuando no sean medibles: usá "aproximado" o "estimado".
+- No generes capítulos temáticos ni un índice temático basado en el contenido original.
 
-FORMATO OBLIGATORIO
+SALIDA JSON
+Devolvé exclusivamente JSON válido, sin Markdown ni bloques de código, con este esquema:
 {
  "schema":"doculab.model/v1",
- "id":"model-identificador",
- "name":"Nombre del modelo",
- "category":"Categoría",
- "description":"Qué tipo de documento permite crear",
- "instructions":"Reglas globales para reutilizar fielmente la estructura del PDF",
+ "id":"sistema-editorial-identificador",
+ "name":"Sistema editorial — [descripción visual genérica]",
+ "category":"Diseño editorial",
+ "description":"Plantilla visual reutilizable basada en el sistema de maquetación del PDF de referencia; independiente de su tema.",
+ "instructions":"Reglas globales para reproducir formato, retícula, tipografía, márgenes, espaciados y jerarquías. Aclarar que el contenido futuro debe ser independiente del PDF de referencia.",
  "components":[
   {
-   "id":"identificador-simple",
-   "title":"Título de la sección",
-   "description":"Función y posición de esta sección en la estructura",
-   "instruction":"Instrucciones concretas para generar esta sección en documentos futuros",
-   "preview":"Ejemplo breve de cómo se vería esta sección",
+   "id":"configuracion-pagina",
+   "title":"Configuración de página y retícula",
+   "description":"Formato físico, orientación, márgenes, columnas y área útil.",
+   "instruction":"Especificación operativa de página y retícula con medidas aproximadas y nivel de certeza.",
+   "preview":"Formato: A4 vertical · Márgenes: valores estimados · Una columna",
    "enabled":true,
    "order":0
   }
@@ -153,9 +159,8 @@ FORMATO OBLIGATORIO
  "version":1
 }
 
-Usá IDs únicos en kebab-case. El campo order empieza en 0 y sigue el orden del documento. Incluí entre 3 y 25 componentes, según la complejidad real del PDF. Si hay subsecciones con autonomía, representalas como componentes separados y preservá su numeración en el título. No incluyas el texto completo del PDF ni datos inventados.
-
-Antes de responder, verificá que el JSON sea válido, que todos los componentes tengan los campos requeridos, que los IDs sean únicos y que el orden sea consecutivo.`;
+Incluí entre 5 y 25 componentes según la complejidad visual real. Cada componente debe tener id único en kebab-case, title, description, instruction, preview, enabled y order. order debe ser consecutivo desde 0.
+Antes de responder, verificá JSON válido, IDs únicos, campos completos y que ningún componente esté nombrado por el tema o los conceptos del documento. El resultado debe poder aplicarse a un documento de una materia totalmente diferente sin cambiar su identidad visual.`;
 }
 function importModel(file){const r=new FileReader();r.onload=()=>{try{const m=JSON.parse(r.result);if(m.schema!=="doculab.model/v1"||!Array.isArray(m.components))throw Error("Formato de modelo no reconocido");fill(m);toast("Modelo importado al editor")}catch(e){toast("No se pudo importar: "+e.message)}};r.readAsText(file)}
 function init(){
