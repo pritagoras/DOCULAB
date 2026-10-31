@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "models": [
+    {"id":"manual","name":"Manual universitario","category":"Académicos"},
+    {"id":"guide","name":"Guía de estudio detallada","category":"Académicos"},
+    {"id":"summary","name":"Superresumen académico","category":"Académicos"},
+    {"id":"qa","name":"Banco de preguntas y respuestas","category":"Evaluación"},
+    {"id":"comparison","name":"Cuadro comparativo","category":"Visuales"},
+    {"id":"glossary","name":"Glosario conceptual","category":"Académicos"},
+    {"id":"critical","name":"Análisis crítico de textos","category":"Académicos"},
+    {"id":"article","name":"Artículo científico","category":"Científicos"},
+    {"id":"review","name":"Revisión bibliográfica","category":"Científicos"},
+    {"id":"infographic","name":"Infografía educativa","category":"Visuales"},
+    {"id":"flow","name":"Diagrama de procesos","category":"Visuales"},
+    {"id":"exam","name":"Examen de opción múltiple","category":"Evaluación"}
+  ]
+}
