@@ -51,14 +51,14 @@ async function loadRepositoryModels(){
   repositoryEntries=manifest.models;
   const loaded=[];
   for(const entry of manifest.models){
-   if(!entry.path||!/^models\\/[a-z0-9-]+\\/model\\.json$/i.test(entry.path))continue;
+   if(!entry.path||!/^models\/[a-z0-9-]+\/model\.json$/i.test(entry.path))continue;
    try{const file=await fetch("./"+entry.path,{cache:"no-store"});if(!file.ok)continue;const model=await file.json();if(model.schema==="doculab.model/v1"&&Array.isArray(model.components))loaded.push(model)}catch{}
   }
   if(loaded.length){const local=load(),merged=[...loaded,...local.filter(x=>!loaded.some(y=>y.id===x.id))];save(merged);window.dispatchEvent(new CustomEvent("doculab:templates-changed"))}
  }catch{}
 }
 function exportModel(){const m=current();if(!m.name){toast("Poné un nombre antes de exportar");return}const path="models/"+slug(m.name)+"/model.json";m.id=m.id||"model_"+slug(m.name);download("model.json",JSON.stringify(m,null,2),"application/json");$("#modelSaveStatus").textContent="Archivo exportado. Guardalo en "+path+" dentro del repositorio."}
-function exportIndex(){const m=current();if(!m.name){toast("Poné un nombre antes de exportar");return}const path="models/"+slug(m.name)+"/model.json";const entries=[...repositoryEntries.filter(x=>x.path!==path),{id:m.id,name:m.name,path}].sort((a,b)=>a.name.localeCompare(b.name));const manifest={schema:"doculab.models-index/v1",updated:new Date().toISOString(),models:entries};download("index.json",JSON.stringify(manifest,null,2),"application/json");$("#modelSaveStatus").textContent="Copiá este index.json a models/index.json en el repositorio."}
+function exportIndex(){const m=current();if(!m.name){toast("Poné un nombre antes de exportar");return}const path="models/"+slug(m.name)+"/model.json";const entries=[...repositoryEntries.filter(x=>x.path!==path),{id:m.id,name:m.name,path}].sort((a,b)=>a.name.localeCompare(b.name));const manifest={schema:"doculab.models-index/v1",updated:new Date().toISOString(),models:entries};repositoryEntries=entries;download("index.json",JSON.stringify(manifest,null,2),"application/json");$("#modelSaveStatus").textContent="Copiá este index.json a models/index.json en el repositorio."}
 function importModel(file){const r=new FileReader();r.onload=()=>{try{const m=JSON.parse(r.result);if(m.schema!=="doculab.model/v1"||!Array.isArray(m.components))throw Error("Formato de modelo no reconocido");fill(m);toast("Modelo importado al editor")}catch(e){toast("No se pudo importar: "+e.message)}};r.readAsText(file)}
 function init(){
  if(!$("#componentList"))return;
