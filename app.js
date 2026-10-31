@@ -100,7 +100,10 @@ function updateProviderUI(provider,detect=true){
  };
  limits.innerHTML=content[provider]||content.none;
  $("#aiKey").disabled=!["openai","gemini"].includes(provider);
- $("#aiKey").placeholder=provider==="openai"?"Clave API de OpenAI":provider==="gemini"?"Clave API de Gemini":"No requiere clave API";
+ $("#saveLocalKey").disabled=!["openai","gemini"].includes(provider);
+ $("#refreshModels").disabled=provider==="none";
+ $("#aiKey").placeholder=provider==="openai"?"Clave API de OpenAI":provider==="gemini"?"Clave API de Gemini":"Ollama no requiere clave API";
+ $("#aiKey").previousElementSibling.textContent=provider==="ollama"?"Clave API (no requerida)":provider==="none"?"Clave API (modo manual)":"Clave API";
  $("#modelHint").textContent=provider==="ollama"?"Se listan los modelos instalados en tu servidor Ollama. También podés escribir una etiqueta manualmente.":provider==="openai"?"Se consultan los modelos visibles para tu clave. No todos los modelos de la lista necesariamente admiten el endpoint de chat usado por DOCULAB.":"Se consultan los modelos habilitados para generateContent en tu proyecto.";
  refreshLocalKeyStatus();
  if(detect&&provider!=="none")refreshModels();
