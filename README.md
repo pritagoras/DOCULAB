@@ -35,9 +35,11 @@ Para incorporar un modelo nuevo:
 
 No hace falta configurar un token de GitHub ni conectar DOCULAB con la API de GitHub. Los modelos publicados se cargan desde el propio repositorio al abrir la aplicación.
 
-## IA opcional
+## IA opcional y contexto permanente
 
 La IA solo interviene cuando se quiere generar o modificar contenido o diseñar modelos. Los modelos documentales guardados no dependen de ella.
+
+Todas las solicitudes que pasan por el puente local reciben automáticamente el manual `docs/DOCULAB_AI_CONTEXT.md` como instrucción de sistema, independientemente del proveedor (Ollama, OpenAI o Gemini) y de si la tarea es diseñar un modelo o redactar una sección. El manual se lee desde disco en cada solicitud: al editarlo no hace falta modificar el código, pero sí reiniciar el puente si se cambió el propio servidor. Mantené ese archivo actualizado cuando cambien el esquema, la interfaz, las capacidades o las limitaciones de DOCULAB. El contexto del producto se combina con el prompt específico de cada tarea; no reemplaza las instrucciones particulares del modelo ni el material fuente.
 
 Proveedores del puente local:
 - Ollama local.
