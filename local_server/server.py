@@ -3,7 +3,8 @@ from pathlib import Path
 from io import BytesIO
 from urllib.parse import unquote
 import httpx
-from fastapi import FastAPI, HTTPException, Request\nfrom pypdf import PdfReader
+from fastapi import FastAPI, HTTPException, Request
+from pypdf import PdfReader
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
