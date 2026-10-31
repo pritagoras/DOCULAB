@@ -67,7 +67,7 @@ async function designWithAI(){
  const button=$("#designModelWithAI");button.disabled=true;button.textContent="Diseñando…";
  try{
   const endpoint=$("#aiEndpoint").value.replace(/\/+$/,"");
-  const response=await fetch(endpoint+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({provider,model:$("#aiModel").value,prompt,api_key:$("#aiKey").value})});
+  const response=await fetch(endpoint+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({provider,model:$("#aiModel").value,prompt,api_key:""})});
   if(!response.ok)throw Error("HTTP "+response.status);
   const data=await response.json();let raw=String(data.text||"").trim().replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"");
   const model=JSON.parse(raw);if(!Array.isArray(model.components))throw Error("La respuesta no contiene componentes");
