@@ -105,6 +105,58 @@ async function designModelFromPDF(){
  }catch(e){status.textContent="No se pudo crear el modelo: "+e.message;toast("Error al analizar el PDF")}
  finally{button.disabled=false;button.textContent="Analizar PDF y crear modelo"}
 }
+function buildExternalPdfPrompt(){
+ return `Actuá como especialista en diseño documental y arquitectura de plantillas. Analizá el PDF adjunto y reconstruí su estructura como un modelo modular reutilizable para DOCULAB.
+
+OBJETIVO
+No quiero que redactes un documento nuevo ni que resumas el contenido. Quiero que reproduzcas la ESTRUCTURA del PDF para convertirla en una plantilla editable: organización, jerarquías, orden, tipos de sección y convenciones recurrentes.
+
+ANALIZÁ
+- Portada, encabezados, subtítulos y niveles de títulos.
+- Índice y numeración, si existen.
+- Secciones, subsecciones y su orden exacto.
+- Tablas, cuadros comparativos, actividades, preguntas, ejercicios, fichas, glosarios, bibliografía y anexos.
+- Elementos recurrentes y patrones de organización.
+- Instrucciones, campos o espacios que se repiten.
+- Diferenciá las secciones reales del documento de los números de página, encabezados/pies repetidos y elementos decorativos.
+
+REGLAS
+1. Conservá la jerarquía y el orden del PDF. No aplanes subsecciones importantes.
+2. No inventes secciones que no estén justificadas por el documento.
+3. Convertí cada bloque funcional en un componente independiente cuando tenga sentido.
+4. Para cada componente describí qué función cumple y qué instrucciones debería seguir una IA al generar un documento nuevo con esa plantilla.
+5. En "preview" escribí una muestra breve que represente el formato, no copies párrafos extensos del PDF.
+6. Si el PDF contiene preguntas, tablas o actividades, indicá su formato y estructura; no las conviertas automáticamente en texto corrido.
+7. Conservá numeración y rótulos originales cuando sean estructurales.
+8. Si no podés determinar algo, indicálo en la descripción en vez de inventarlo.
+9. Devolvé exclusivamente JSON válido. Sin Markdown, sin bloques de código y sin comentarios.
+
+FORMATO OBLIGATORIO
+{
+ "schema":"doculab.model/v1",
+ "id":"model-identificador",
+ "name":"Nombre del modelo",
+ "category":"Categoría",
+ "description":"Qué tipo de documento permite crear",
+ "instructions":"Reglas globales para reutilizar fielmente la estructura del PDF",
+ "components":[
+  {
+   "id":"identificador-simple",
+   "title":"Título de la sección",
+   "description":"Función y posición de esta sección en la estructura",
+   "instruction":"Instrucciones concretas para generar esta sección en documentos futuros",
+   "preview":"Ejemplo breve de cómo se vería esta sección",
+   "enabled":true,
+   "order":0
+  }
+ ],
+ "version":1
+}
+
+Usá IDs únicos en kebab-case. El campo order empieza en 0 y sigue el orden del documento. Incluí entre 3 y 25 componentes, según la complejidad real del PDF. Si hay subsecciones con autonomía, representalas como componentes separados y preservá su numeración en el título. No incluyas el texto completo del PDF ni datos inventados.
+
+Antes de responder, verificá que el JSON sea válido, que todos los componentes tengan los campos requeridos, que los IDs sean únicos y que el orden sea consecutivo.`;
+}
 function importModel(file){const r=new FileReader();r.onload=()=>{try{const m=JSON.parse(r.result);if(m.schema!=="doculab.model/v1"||!Array.isArray(m.components))throw Error("Formato de modelo no reconocido");fill(m);toast("Modelo importado al editor")}catch(e){toast("No se pudo importar: "+e.message)}};r.readAsText(file)}
 function init(){
  if(!$("#componentList"))return;
@@ -113,7 +165,7 @@ function init(){
  $("#componentList").addEventListener("change",e=>{const row=e.target.closest("[data-index]");if(!row)return;const i=Number(row.dataset.index);if(e.target.matches("[data-toggle]")){components[i].enabled=e.target.checked;renderComponents()}else if(e.target.matches("[data-sample]")){components[i].preview=e.target.value;renderPreview()}});$("#componentList").addEventListener("input",e=>{const row=e.target.closest("[data-index]");if(!row||!e.target.matches("[data-sample]"))return;components[Number(row.dataset.index)].preview=e.target.value;renderPreview()});
  ["modelName","modelCategory","modelDescription"].forEach(id=>$("#"+id).addEventListener("input",renderPreview));
  $("#addComponent").onclick=()=>{const id=$("#addComponentSelect").value,c=CATALOG.find(x=>x.id===id);if(!c)return;components.push({...c,enabled:true});renderComponents()};
- $("#saveModel").onclick=saveModel;$("#designModelWithAI").onclick=designWithAI;$("#analyzePdfModel").onclick=designModelFromPDF;$("#modelPdfFile").onchange=e=>{const f=e.target.files?.[0];$("#pdfModelStatus").textContent=f?f.name+" · "+(f.size/1024/1024).toFixed(1)+" MB":"Ningún PDF seleccionado";$("#pdfExtractPreview").textContent=""};$("#exportModelJson").onclick=exportModel;$("#exportModelIndex").onclick=exportIndex;
+ $("#saveModel").onclick=saveModel;$("#designModelWithAI").onclick=designWithAI;$("#analyzePdfModel").onclick=designModelFromPDF;$("#copyExternalPdfPrompt").onclick=async()=>{try{await navigator.clipboard.writeText(buildExternalPdfPrompt());$("#externalPdfPromptStatus").textContent="Prompt copiado. Adjuntá el PDF en la IA que prefieras y pegalo allí."}catch{$("#externalPdfPromptText").value=buildExternalPdfPrompt();$("#externalPdfPromptText").focus();$("#externalPdfPromptText").select();$("#externalPdfPromptStatus").textContent="Seleccioné el prompt para que puedas copiarlo con Ctrl+C."}};$("#showExternalPdfPrompt").onclick=()=>{const box=$("#externalPdfPromptBox");box.hidden=!box.hidden;if(!box.hidden)$("#externalPdfPromptText").value=buildExternalPdfPrompt()};$("#importPastedModel").onclick=()=>{try{let raw=$("#pastedModelJson").value.trim().replace(/^\\x60{3}(?:json)?\\s*/i,"").replace(/\\s*\\x60{3}$/,"");const match=raw.match(/\\{[\\s\\S]*\\}/);if(match)raw=match[0];const model=JSON.parse(raw);if(!Array.isArray(model.components)||!model.components.length)throw Error("Falta el arreglo components");if(model.components.length>100)throw Error("El JSON contiene demasiados componentes");const ids=new Set();model.components.forEach((c,i)=>{if(!c||typeof c!=="object"||!c.title)throw Error("Componente "+(i+1)+" sin título");c.id=slug(c.id||c.title||("seccion-"+(i+1)));if(ids.has(c.id))c.id+="-"+(i+1);ids.add(c.id);c.enabled=c.enabled!==false;c.order=i;c.description=String(c.description||"");c.instruction=String(c.instruction||"");c.preview=String(c.preview||"")});model.schema="doculab.model/v1";model.id=editingId||model.id||"model_"+slug(model.name||"modelo-importado");model.name=String(model.name||"Modelo importado desde IA");model.category=String(model.category||"Personalizados");model.description=String(model.description||"");model.instructions=String(model.instructions||"");model.components=model.components;fill(model);$("#pastedModelStatus").textContent="JSON convertido en modelo editable. Revisá la estructura y guardalo.";toast("Modelo importado desde JSON")}catch(e){$("#pastedModelStatus").textContent="No se pudo importar: "+e.message;toast("Revisá el JSON pegado")}};$("#modelPdfFile").onchange=e=>{const f=e.target.files?.[0];$("#pdfModelStatus").textContent=f?f.name+" · "+(f.size/1024/1024).toFixed(1)+" MB":"Ningún PDF seleccionado";$("#pdfExtractPreview").textContent=""};$("#exportModelJson").onclick=exportModel;$("#exportModelIndex").onclick=exportIndex;
  $("#importModelJson").onchange=e=>{const f=e.target.files?.[0];if(f)importModel(f);e.target.value=""};
  $("#clearModelForm").onclick=()=>{if(components.length&&$("#modelName").value&&!confirm("¿Empezar un modelo nuevo? Los cambios no guardados se perderán."))return;fill(null)};
 }
