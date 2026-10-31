@@ -71,6 +71,6 @@
  body{background:#fff!important}
  .sidebar,.topbar,.footer,.page-heading,.form-panel,.preview-panel>.panel-title,.preview-panel>.tabbar,.preview-footer,.export-row,.structured-toolbar,.section-editors,.document-live-preview-wrap>.preview-meta{display:none!important}
  .main,.view,.studio-layout,.preview-panel,.structured-editor,.structured-layout,.document-live-preview-wrap,.document-live-preview{display:block!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;background:#fff!important;max-height:none!important;overflow:visible!important}
- .print-document{max-width:none;min-height:0;padding:0;box-shadow:none}
+ .editor-area#documentOutput{display:none!important}.print-document{max-width:none;min-height:0;padding:0;box-shadow:none}
  .print-section{break-inside:avoid}
 }
