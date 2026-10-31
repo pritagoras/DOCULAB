@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <meta name="description" content="DOCULAB — biblioteca y estudio de producción documental asistido por IA.">
+  <title>DOCULAB — Document Studio</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#" aria-label="DOCULAB inicio">
+        <span class="brand-mark">D</span><span><b>DOCULAB</b><small>DOCUMENT STUDIO</small></span>
+      </a>
+      <button class="nav-item active" data-view="library"><span>▦</span> Biblioteca <kbd>01</kbd></button>
+      <button class="nav-item" data-view="studio"><span>✳</span> Crear documento <kbd>02</kbd></button>
+      <button class="nav-item" data-view="builder"><span>⌘</span> Constructor de modelos <kbd>03</kbd></button>
+      <button class="nav-item" data-view="projects"><span>▤</span> Mis proyectos <kbd>04</kbd></button>
+      <div class="sidebar-bottom">
+        <div class="connection-card">
+          <span class="status-dot" id="connectionDot"></span>
+          <div><b id="connectionLabel">Modo navegador</b><small id="connectionSub">Almacenamiento local</small></div>
+        </div>
+        <button class="nav-item" data-view="settings"><span>⚙</span> Configuración</button>
+        <small class="version">DOCULAB · v0.1.0</small>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Abrir menú">☰</button>
+        <div class="breadcrumbs"><span>Workspace</span><i>/</i><b id="crumb">Biblioteca</b></div>
+        <div class="top-actions"><span class="local-pill"><span class="status-dot"></span> Guardado local</span><button class="avatar" title="DOCULAB">D</button></div>
+      </header>
+      <section class="view active" id="view-library">
+        <div class="page-heading"><div><div class="eyebrow">CENTRO DE RECURSOS</div><h1>Biblioteca de modelos</h1><p>Plantillas, instrucciones y estructuras reutilizables para producir documentos.</p></div><button class="button primary" id="newModelTop">＋ Nuevo modelo</button></div>
+        <div class="stats-row"><div class="stat-card"><span>Modelos disponibles</span><b id="statModels">12</b><small>Incluye plantillas iniciales</small></div><div class="stat-card"><span>Mis modelos</span><b id="statCustom">0</b><small>Modelos creados por vos</small></div><div class="stat-card"><span>Proyectos guardados</span><b id="statProjects">0</b><small>Documentos en preparación</small></div></div>
+        <div class="library-toolbar"><label class="searchbox"><span>⌕</span><input id="searchInput" placeholder="Buscar modelos, categorías o palabras clave..."></label><select id="categoryFilter" aria-label="Filtrar por categoría"><option value="all">Todas las categorías</option></select><select id="sortFilter" aria-label="Ordenar"><option value="featured">Destacados</option><option value="az">Nombre A–Z</option><option value="newest">Más recientes</option></select></div>
+        <div class="section-line"><h2>Explorar modelos</h2><span id="resultCount">12 modelos</span></div><div class="model-grid" id="modelGrid"></div><div class="empty-state hidden" id="emptyLibrary"><b>No encontramos modelos</b><p>Probá con otra búsqueda o creá tu propia plantilla.</p></div>
+      </section>
+      <section class="view" id="view-studio">
+        <div class="page-heading"><div><div class="eyebrow">PRODUCCIÓN DOCUMENTAL</div><h1>Crear documento</h1><p>Elegí un modelo, agregá tus fuentes y prepará el contenido.</p></div></div>
+        <div class="studio-layout"><div class="panel form-panel"><div class="panel-title"><span class="step">01</span><div><h2>Configuración del documento</h2><p>Definí la estructura y el alcance del trabajo.</p></div></div>
+        <label class="field-label">Modelo de partida</label><select id="studioModel"></select><label class="field-label">Título del documento</label><input id="docTitle" placeholder="Ej. Mecanismos de regulación génica"><label class="field-label">Material de entrada</label><textarea id="sourceText" rows="9" placeholder="Pegá aquí apuntes, transcripciones, fragmentos de bibliografía o el contenido que querés organizar..."></textarea><div class="file-note">En esta versión podés pegar texto directamente. La importación y extracción de archivos se ampliará en la siguiente iteración.</div>
+        <div class="two-fields"><div><label class="field-label">Profundidad</label><select id="depth"><option>Sintética</option><option selected>Intermedia</option><option>Profunda</option><option>Exhaustiva</option></select></div><div><label class="field-label">Estilo editorial</label><select id="docStyle"><option>Académico minimalista</option><option>Manual editorial</option><option>Esquemático</option><option>Visual didáctico</option></select></div></div>
+        <label class="field-label">Indicaciones adicionales</label><textarea id="extraInstructions" rows="3" placeholder="Restricciones, prioridades, fuentes permitidas, tono..."></textarea><div class="button-row"><button class="button secondary" id="buildPrompt">Preparar prompt</button><button class="button primary" id="generateDoc">Generar borrador</button></div></div>
+        <div class="panel preview-panel"><div class="panel-title"><span class="step">02</span><div><h2>Área de trabajo</h2><p>Revisá el prompt o editá el documento resultante.</p></div></div><div class="tabbar"><button class="tab active" data-tab="prompt">Prompt ensamblado</button><button class="tab" data-tab="document">Documento</button></div><textarea id="promptOutput" class="editor-area" spellcheck="false" placeholder="El prompt ensamblado aparecerá aquí..."></textarea><textarea id="documentOutput" class="editor-area hidden" placeholder="El borrador aparecerá aquí. Podés editarlo antes de exportar."></textarea><div class="preview-footer"><span id="studioStatus">Listo para comenzar.</span><div><button class="button ghost small" id="copyPrompt">Copiar prompt</button><button class="button primary small" id="saveProject">Guardar proyecto</button></div></div><div class="export-row"><button class="button secondary" id="exportHtml">Exportar HTML</button><button class="button secondary" id="printPdf">Imprimir / Guardar PDF</button></div></div></div>
+      </section>
+      <section class="view" id="view-builder"><div class="page-heading"><div><div class="eyebrow">DISEÑO MODULAR</div><h1>Constructor de modelos</h1><p>Creá plantillas nuevas sin modificar el código de DOCULAB.</p></div></div><div class="builder-layout"><div class="panel"><div class="panel-title"><span class="step">✳</span><div><h2>Definir un modelo</h2><p>La plantilla se guarda en tu biblioteca local.</p></div></div><label class="field-label">Nombre del modelo</label><input id="modelName" placeholder="Ej. Ficha de lectura filosófica"><label class="field-label">Categoría</label><input id="modelCategory" list="categories" placeholder="Académicos, científicos..."><datalist id="categories"><option>Académicos</option><option>Científicos</option><option>Visuales</option><option>Evaluación</option><option>Documentación</option><option>Personalizados</option></datalist><label class="field-label">Descripción</label><textarea id="modelDescription" rows="3" placeholder="¿Para qué sirve este modelo?"></textarea><label class="field-label">Prompt base</label><textarea id="modelPrompt" rows="11" placeholder="Escribí las instrucciones que deberá seguir el modelo de lenguaje..."></textarea><label class="field-label">Estructura esperada</label><textarea id="modelStructure" rows="4" placeholder="Ej. Portada, introducción, capítulos, conclusiones, bibliografía."></textarea><div class="button-row"><button class="button secondary" id="clearModelForm">Limpiar</button><button class="button primary" id="saveModel">Guardar en biblioteca</button></div></div><div class="panel builder-aside"><div class="eyebrow">BUENA PRÁCTICA</div><h2>Un modelo, una función clara.</h2><p>Las mejores plantillas separan el objetivo, las fuentes permitidas, el método de organización, las reglas de precisión y el formato final.</p><div class="tip-list"><div><b>01 · Objetivo</b><small>Qué debe producir el LM.</small></div><div><b>02 · Fuentes</b><small>Qué información puede utilizar.</small></div><div><b>03 · Método</b><small>Cómo debe articularla.</small></div><div><b>04 · Salida</b><small>Cómo debe estructurar y presentar el resultado.</small></div></div></div></div></section>
+      <section class="view" id="view-projects"><div class="page-heading"><div><div class="eyebrow">ARCHIVO PERSONAL</div><h1>Mis proyectos</h1><p>Documentos guardados para continuar, revisar o exportar.</p></div></div><div class="project-list" id="projectList"></div><div class="empty-state hidden" id="emptyProjects"><b>Todavía no hay proyectos</b><p>Los documentos que guardes desde el estudio aparecerán acá.</p><button class="button primary" data-go="studio">Crear primer documento</button></div></section>
+      <section class="view" id="view-settings"><div class="page-heading"><div><div class="eyebrow">PREFERENCIAS Y CONEXIONES</div><h1>Configuración</h1><p>Administrá tus datos y la conexión con modelos de lenguaje.</p></div></div><div class="settings-grid"><div class="panel"><h2>Almacenamiento y biblioteca</h2><p>Los modelos y proyectos se guardan en este navegador. Exportá copias de seguridad periódicamente.</p><div class="button-row"><button class="button secondary" id="exportLibrary">Exportar biblioteca JSON</button><label class="button secondary file-button">Importar biblioteca<input type="file" id="importLibrary" accept="application/json"></label></div></div><div class="panel"><h2>Conexión con IA</h2><p>Conectá un servidor local compatible con la API de Ollama o un endpoint OpenAI-compatible. La conexión se ejecuta desde el servicio local, no desde GitHub Pages.</p><label class="field-label">Tipo de conexión</label><select id="aiProvider"><option value="none">Sin conexión — copiar prompts</option><option value="ollama">Ollama local</option><option value="openai">API compatible con OpenAI</option></select><label class="field-label">Dirección del servicio local</label><input id="aiEndpoint" value="http://localhost:8000"><label class="field-label">Modelo (nombre en Ollama / API)</label><input id="aiModel" placeholder="Ej. qwen2.5:7b"><label class="field-label">Clave API (opcional, se guarda solo en esta sesión)</label><input id="aiKey" type="password" placeholder="API key"><div class="button-row"><button class="button secondary" id="testConnection">Probar conexión</button><button class="button primary" id="saveSettings">Guardar configuración</button></div><small id="connectionMessage" class="muted"></small></div><div class="panel danger-zone"><h2>Datos locales</h2><p>Eliminar los datos locales borra los modelos personalizados y proyectos guardados en este navegador.</p><button class="button danger" id="clearData">Borrar datos locales</button></div></div></section>
+      <footer class="footer">DOCULAB <span>·</span> Un espacio modular para pensar, organizar y producir documentos.</footer>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div><div class="modal-backdrop hidden" id="modelModal"><div class="modal panel"><button class="modal-close" id="closeModal">×</button><div id="modalContent"></div></div></div>
+  <script src="app.js"></script>
+</body>
+</html>
