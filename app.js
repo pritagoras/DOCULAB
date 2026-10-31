@@ -104,7 +104,7 @@ function updateProviderUI(provider,detect=true){
  $("#refreshModels").disabled=provider==="none";
  $("#aiKey").placeholder=provider==="openai"?"Clave API de OpenAI":provider==="gemini"?"Clave API de Gemini":"Ollama no requiere clave API";
  $("#aiKey").previousElementSibling.textContent=provider==="ollama"?"Clave API (no requerida)":provider==="none"?"Clave API (modo manual)":"Clave API";
- $("#modelHint").textContent=provider==="ollama"?"Se listan los modelos instalados en tu servidor Ollama. También podés escribir una etiqueta manualmente.":provider==="openai"?"Se consultan los modelos visibles para tu clave. No todos los modelos de la lista necesariamente admiten el endpoint de chat usado por DOCULAB.":"Se consultan los modelos habilitados para generateContent en tu proyecto.";
+ $("#modelHint").textContent=provider==="none"?"Sin proveedor: escribí un identificador solo si querés preparar un prompt manual.":provider==="ollama"?"Se listan los modelos instalados en tu servidor Ollama. También podés escribir una etiqueta manualmente.":provider==="openai"?"Se consultan los modelos visibles para tu clave. No todos los modelos de la lista necesariamente admiten el endpoint de chat usado por DOCULAB.":"Se consultan los modelos habilitados para generateContent en tu proyecto.";
  refreshLocalKeyStatus();
  if(detect&&provider!=="none")refreshModels();
  renderModelInfo();
