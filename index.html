@@ -12,6 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <script>try{const t=localStorage.getItem("doculab_theme")|| (matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.dataset.theme=t}catch(e){}</script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -38,7 +39,7 @@
       <header class="topbar">
         <button class="mobile-menu" id="mobileMenu" aria-label="Abrir menú">☰</button>
         <div class="breadcrumbs"><span>Workspace</span><i>/</i><b id="crumb">Biblioteca</b></div>
-        <div class="top-actions"><span class="local-pill"><span class="status-dot"></span> Guardado local</span><button class="avatar" title="DOCULAB">D</button></div>
+        <div class="top-actions"><span class="local-pill"><span class="status-dot"></span> Guardado local</span><button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar tema" title="Cambiar tema"><span id="themeIcon">☾</span><span id="themeLabel">Oscuro</span></button><button class="avatar" title="DOCULAB">D</button></div>
       </header>
       <section class="view active" id="view-library">
         <div class="page-heading"><div><div class="eyebrow">CENTRO DE RECURSOS</div><h1>Biblioteca de modelos</h1><p>Plantillas, instrucciones y estructuras reutilizables para producir documentos.</p></div><button class="button primary" id="newModelTop">＋ Nuevo modelo</button></div>
@@ -80,7 +81,39 @@
           </div>
         </div>
       </section><section class="view" id="view-projects"><div class="page-heading"><div><div class="eyebrow">ARCHIVO PERSONAL</div><h1>Mis proyectos</h1><p>Documentos guardados para continuar, revisar o exportar.</p></div></div><div class="project-list" id="projectList"></div><div class="empty-state hidden" id="emptyProjects"><b>Todavía no hay proyectos</b><p>Los documentos que guardes desde el estudio aparecerán acá.</p><button class="button primary" data-go="studio">Crear primer documento</button></div></section>
-      <section class="view" id="view-settings"><div class="page-heading"><div><div class="eyebrow">PREFERENCIAS Y CONEXIONES</div><h1>Configuración</h1><p>Administrá tus datos y la conexión con modelos de lenguaje.</p></div></div><div class="settings-grid"><div class="panel"><h2>Almacenamiento y biblioteca</h2><p>Los modelos y proyectos se guardan en este navegador. Exportá copias de seguridad periódicamente.</p><div class="button-row"><button class="button secondary" id="exportLibrary">Exportar biblioteca JSON</button><label class="button secondary file-button">Importar biblioteca<input type="file" id="importLibrary" accept="application/json"></label></div></div><div class="panel ai-settings-panel"><h2>Conexión con IA</h2><p>Configurá el proveedor una sola vez. DOCULAB adjunta automáticamente su manual interno de funcionamiento a cada consulta de IA. Las claves API no se guardan en el navegador ni en el repositorio.</p><div class="setup-steps"><div><b>01 · Proveedor</b><small>Elegí Ollama, OpenAI o Gemini.</small></div><div><b>02 · Credenciales</b><small>Ingresá la clave o dirección correspondiente.</small></div><div><b>03 · Prueba</b><small>Verificá la conexión antes de generar.</small></div></div><label class="field-label">Tipo de conexión</label><select id="aiProvider"><option value="none">Sin conexión — copiar prompts</option><option value="ollama">Ollama local</option><option value="openai">OpenAI API</option><option value="gemini">Google Gemini API</option></select><label class="field-label">Dirección del puente local</label><input id="aiEndpoint" value="http://localhost:8000"><small class="muted">Normalmente no hace falta cambiarla cuando ejecutás INICIAR_DOCULAB.bat.</small><label class="field-label">Identificador del modelo</label><input id="aiModel" placeholder="Ej. qwen2.5:7b / gpt-4o-mini / gemini-2.5-flash"><small id="modelHint" class="muted">Escribí el nombre exacto del modelo disponible en el proveedor.</small><label class="field-label">Clave API</label><input id="aiKey" type="password" autocomplete="off" placeholder="Pegá aquí tu clave API"><small class="muted">La clave se guarda en un archivo local_server/.env de esta PC. Es texto sin cifrar: no lo compartas ni lo subas. No se guarda en el navegador ni se incluye al exportar modelos.</small><div class="button-row"><button class="button secondary" id="saveLocalKey">Guardar clave en este equipo</button><button class="button secondary" id="testConnection">Probar conexión</button><button class="button primary" id="saveSettings">Guardar proveedor</button></div><small id="localKeyStatus" class="muted">Consultando si ya hay una clave guardada en este equipo…</small><small id="connectionMessage" class="muted">Primero iniciá DOCULAB con el archivo BAT. Después elegí el proveedor y probá la conexión.</small></div><div class="panel danger-zone"><h2>Datos locales</h2><p>Eliminar los datos locales borra los modelos personalizados y proyectos guardados en este navegador.</p><button class="button danger" id="clearData">Borrar datos locales</button></div></div></section>
+      <section class="view" id="view-settings"><div class="page-heading"><div><div class="eyebrow">PREFERENCIAS Y CONEXIONES</div><h1>Configuración</h1><p>Administrá tus datos y la conexión con modelos de lenguaje.</p></div></div><div class="settings-grid"><div class="panel"><h2>Almacenamiento y biblioteca</h2><p>Los modelos y proyectos se guardan en este navegador. Exportá copias de seguridad periódicamente.</p><div class="button-row"><button class="button secondary" id="exportLibrary">Exportar biblioteca JSON</button><label class="button secondary file-button">Importar biblioteca<input type="file" id="importLibrary" accept="application/json"></label></div></div><div class="panel ai-settings-panel">
+  <div class="ai-heading"><div><div class="eyebrow">CONFIGURACIÓN DEL MOTOR</div><h2>Elegí tu inteligencia artificial</h2><p>Conectá un proveedor, explorá los modelos disponibles y revisá sus características antes de usarlos.</p></div><span class="ai-status-chip"><i class="status-dot off" id="aiProviderDot"></i><span id="aiProviderState">Sin conexión</span></span></div>
+  <div class="provider-grid" role="group" aria-label="Proveedor de inteligencia artificial">
+    <button type="button" class="provider-card" data-provider="ollama"><span class="provider-icon">◉</span><b>Ollama</b><small>Local · Privado · Sin costo por token</small><em>Usa los modelos instalados en tu PC</em></button>
+    <button type="button" class="provider-card" data-provider="openai"><span class="provider-icon">✳</span><b>OpenAI</b><small>API · Pago por uso</small><em>Modelos GPT y modelos compatibles</em></button>
+    <button type="button" class="provider-card" data-provider="gemini"><span class="provider-icon">✧</span><b>Google Gemini</b><small>API · Nivel gratuito y pago</small><em>Modelos Gemini disponibles para tu proyecto</em></button>
+    <button type="button" class="provider-card provider-card-muted" data-provider="none"><span class="provider-icon">⌘</span><b>Sin proveedor</b><small>Modo manual</small><em>Preparar y copiar prompts sin conexión</em></button>
+  </div>
+  <select id="aiProvider" class="provider-native" aria-hidden="true" tabindex="-1"><option value="none">Sin conexión — copiar prompts</option><option value="ollama">Ollama local</option><option value="openai">OpenAI API</option><option value="gemini">Google Gemini API</option></select>
+  <div class="ai-config-grid">
+    <div class="ai-config-main">
+      <div class="ai-section-title"><span>01</span><div><b>Modelo</b><small>Seleccioná uno detectado o escribí su identificador manualmente.</small></div></div>
+      <div class="model-select-row"><input id="aiModel" list="aiModelSuggestions" placeholder="Ej. gpt-6.1-terra / gemini-3.8-flash / qwen2.5:7b"><datalist id="aiModelSuggestions"></datalist><button class="button secondary" id="refreshModels" type="button">↻ Detectar modelos</button></div>
+      <small id="modelHint" class="muted">La detección consulta los modelos habilitados para tu clave o instalados localmente.</small>
+      <div id="modelInfo" class="model-info-panel"><b>Elegí un proveedor y un modelo</b><p>Vas a ver contexto, modalidad de cobro y datos técnicos cuando estén disponibles.</p></div>
+      <div class="ai-section-title"><span>02</span><div><b>Conexión</b><small>La dirección del puente local normalmente no necesita cambios.</small></div></div>
+      <label class="field-label" for="aiEndpoint">Dirección del puente local</label><input id="aiEndpoint" value="http://localhost:8000"><small class="muted">Requiere ejecutar INICIAR_DOCULAB.bat para conectar con el servidor local.</small>
+    </div>
+    <div class="ai-config-side">
+      <div class="ai-section-title"><span>03</span><div><b>Credenciales</b><small>Claves privadas almacenadas en este equipo.</small></div></div>
+      <label class="field-label" for="aiKey">Clave API</label><input id="aiKey" type="password" autocomplete="off" placeholder="Pegá aquí tu clave API">
+      <small class="muted">Se guarda en local_server/.env. Es texto sin cifrar: no lo compartas ni lo subas.</small>
+      <div class="button-row"><button class="button secondary" id="saveLocalKey">Guardar clave</button></div>
+      <small id="localKeyStatus" class="muted">Consultando el estado de las credenciales locales…</small>
+      <div class="ai-limit-card" id="providerLimits">
+        <b>Límites y uso</b><p>Los límites dependen del proveedor, modelo y nivel de tu cuenta.</p>
+      </div>
+      <div class="button-row ai-actions"><button class="button secondary" id="testConnection">Probar conexión</button><button class="button primary" id="saveSettings">Guardar configuración</button></div>
+      <small id="connectionMessage" class="muted">Seleccioná un proveedor para empezar.</small>
+    </div>
+  </div>
+  <div class="ai-footer-note"><span>ⓘ</span><p>Los límites publicados son orientativos. Las cuotas activas, el saldo y los límites RPM/TPM reales se consultan en el panel de cada proveedor; DOCULAB no puede deducirlos solamente a partir de la clave.</p></div>
+</div><div class="panel danger-zone"><h2>Datos locales</h2><p>Eliminar los datos locales borra los modelos personalizados y proyectos guardados en este navegador.</p><button class="button danger" id="clearData">Borrar datos locales</button></div></div></section>
       <footer class="footer">DOCULAB <span>·</span> Un espacio modular para pensar, organizar y producir documentos.</footer>
     </main>
   </div>
