@@ -34,9 +34,10 @@ function renderPreview(){
  $("#modelPreview").innerHTML='<div class="doc-page"><div class="doc-kicker">DOCULAB · PLANTILLA DOCUMENTAL</div><h1>'+title+'</h1><p class="doc-placeholder" style="text-align:center">Subtítulo o descripción del documento</p>'+enabled.map((c,i)=>'<section class="doc-section"><h2>'+esc((i+1)+". "+c.title)+'</h2><p class="doc-placeholder">'+esc(c.preview||"El contenido de esta sección se completará al generar el documento.")+'</p></section>').join("")+'</div>';
 }
 function fill(model){
- editingId=model?.id||null;$("#modelName").value=model?.name||"";$("#modelCategory").value=model?.category||"Personalizados";$("#modelDescription").value=model?.description||"";$("#modelPrompt").value=model?.instructions||"";
- components=(model?.components||CATALOG.slice(0,5).map(c=>({...c,enabled:true}))).map(c=>({...c}));
- renderComponents();$("#modelSaveStatus").textContent=model?"Editando modelo guardado: "+model.name:"Nuevo modelo. Guardalo localmente y exportalo cuando esté listo.";
+ editingId=model?.id||null;$("#modelName").value=model?.name||"";$("#modelCategory").value=model?.category||"Personalizados";$("#modelDescription").value=model?.description||"";$("#modelPrompt").value=model?.instructions||model?.prompt||"";
+ const legacy=String(model?.structure||"").split(";").map((name,i)=>({id:"legacy-"+i+"-"+slug(name),title:name.trim(),description:"Sección importada del modelo original.",instruction:"Desarrollar esta sección respetando las instrucciones generales del modelo.",enabled:true,order:i})).filter(c=>c.title);
+ components=(model?.components||legacy.length?model?.components||legacy:CATALOG.slice(0,5).map(c=>({...c,enabled:true}))).map((c,i)=>({...c,order:c.order??i}));
+ renderComponents();$("#modelSaveStatus").textContent=model?"Editando modelo: "+model.name+" · Los cambios se guardan como versión modular local.":"Nuevo modelo. Guardalo localmente y exportalo cuando esté listo.";
 }
 function saveModel(){
  const m=current();if(!m.name){toast("Poné un nombre al modelo");return}if(!m.components.some(c=>c.enabled)){toast("Activá al menos un componente");return}
