@@ -87,7 +87,7 @@ function applyTheme(theme){
 function updateProviderUI(provider,detect=true){
  $("#aiProvider").value=provider;
  if(provider!==lastSelectedProvider){const defaults={none:"",ollama:"qwen2.5:7b",openai:"gpt-6.1-terra",gemini:"gemini-3.8-flash"};if(lastSelectedProvider!==null||!$("#aiModel").value.trim())$("#aiModel").value=defaults[provider]||"";lastSelectedProvider=provider;discoveredModels=[]}
- $(".provider-card").forEach(card=>card.classList.toggle("active",card.dataset.provider===provider));
+ $$(".provider-card").forEach(card=>card.classList.toggle("active",card.dataset.provider===provider));
  const names={none:"Sin conexión",ollama:"Ollama local",openai:"OpenAI API",gemini:"Google Gemini"};
  $("#aiProviderState").textContent=names[provider]||"Sin conexión";
  $("#aiProviderDot").classList.toggle("off",provider==="none");
