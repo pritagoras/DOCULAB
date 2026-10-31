@@ -26,7 +26,7 @@ def load_product_context():
 def system_context():
     return (
         "Sos el asistente integrado en DOCULAB. El siguiente manual describe el producto, "
-        "su arquitectura, esquema, funciones y limitaciones. Respetalo en todas tus respuestas.\\n\\n"
+        "su arquitectura, esquema, funciones y limitaciones. Respetalo en todas tus respuestas.\n\n"
         + load_product_context()
     )
 
