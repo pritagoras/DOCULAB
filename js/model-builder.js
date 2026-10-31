@@ -16,12 +16,12 @@ const CATALOG=[
 {id:"bibliography",title:"Bibliografía",description:"Referencias de las fuentes proporcionadas.",instruction:"Listar únicamente referencias bibliográficas disponibles en el material. Marcar datos incompletos en lugar de inventarlos."},
 {id:"appendix",title:"Anexos",description:"Material complementario.",instruction:"Organizar el material complementario como anexos identificados y referenciados desde el cuerpo."}
 ];
-let components=[],editingId=null;
+let components=[],editingId=null,referencePages=[];
 const load=()=>{try{return JSON.parse(localStorage.getItem("doculab_templates")||"[]")}catch{return []}};
 const save=(arr)=>localStorage.setItem("doculab_templates",JSON.stringify(arr));
 const slug=s=>(s||"modelo").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"modelo";
 function toast(s){const t=$("#toast");if(!t)return;t.textContent=s;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
-function current(){return {schema:"doculab.model/v1",id:editingId||"model_"+slug($("#modelName").value),name:$("#modelName").value.trim(),category:$("#modelCategory").value.trim()||"Personalizados",description:$("#modelDescription").value.trim(),instructions:$("#modelPrompt").value.trim(),components:components.map((c,i)=>({...c,order:i})),version:1,updated:new Date().toISOString()}}
+function current(){return {schema:"doculab.model/v1",id:editingId||"model_"+slug($("#modelName").value),name:$("#modelName").value.trim(),category:$("#modelCategory").value.trim()||"Personalizados",description:$("#modelDescription").value.trim(),instructions:$("#modelPrompt").value.trim(),components:components.map((c,i)=>({...c,order:i})),referencePages:referencePages.map(p=>({...p})),version:1,updated:new Date().toISOString()}}
 function renderComponents(){
  const host=$("#componentList");if(!host)return;
  host.innerHTML=components.map((c,i)=>'<div class="component-row '+(!c.enabled?"off":"")+'" data-index="'+i+'"><div class="component-order"><button type="button" data-move="-1" title="Subir" '+(i===0?"disabled":"")+'>↑</button><button type="button" data-move="1" title="Bajar" '+(i===components.length-1?"disabled":"")+'>↓</button></div><div class="component-main"><b>'+esc(c.title)+'</b><small>'+esc(c.description||"Componente personalizado")+'</small><details class="sample-editor"><summary>Contenido de muestra para el PDF</summary><textarea data-sample rows="3" placeholder="Ejemplo de texto que aparecerá en la preview de este apartado...">'+esc(c.preview||"")+'</textarea><small>Si lo dejás vacío, DOCULAB genera un ejemplo automático para esta sección.</small></details></div><label class="component-toggle"><input type="checkbox" data-toggle '+(c.enabled?"checked":"")+'> Incluir</label></div>').join("");
@@ -32,9 +32,41 @@ function renderPreview(){
  const enabled=components.filter(c=>c.enabled);$("#previewModelName").textContent=$("#modelName").value.trim()||"Nuevo modelo";$("#previewComponentCount").textContent=enabled.length+" secciones";
  const title=esc($("#modelName").value.trim()||"Título del documento");
  $("#modelPreview").innerHTML='<div class="doc-page"><div class="doc-kicker">DOCULAB · PLANTILLA DOCUMENTAL</div><h1>'+title+'</h1><p class="doc-placeholder" style="text-align:center">Subtítulo o descripción del documento</p>'+enabled.map((c,i)=>'<section class="doc-section"><h2>'+esc((i+1)+". "+c.title)+'</h2><p class="doc-placeholder">'+esc(c.preview||"El contenido de esta sección se completará al generar el documento.")+'</p></section>').join("")+'</div>';
+ renderReferencePages();
+}
+function renderReferencePages(){
+ const host=$("#referencePdfPreview"),count=$("#referencePdfCount");if(!host)return;
+ count.textContent=referencePages.length?referencePages.length+" página(s)":"Sin páginas";
+ host.innerHTML=referencePages.map(p=>'<figure class="reference-page"><img src="'+p.dataUrl+'" alt="Página '+Number(p.page)+' del PDF de referencia"><figcaption>Página '+Number(p.page)+'</figcaption></figure>').join("");
+}
+async function addReferencePdfPages(){
+ const file=$("#referencePdfFile")?.files?.[0],status=$("#referencePdfStatus"),button=$("#renderReferencePdf");
+ if(!file){status.textContent="Seleccioná un PDF primero.";return}
+ if(!window.pdfjsLib){status.textContent="No se pudo cargar el lector PDF. Revisá la conexión y recargá DOCULAB.";return}
+ const pages=[...new Set($("#referencePdfPages").value.split(",").map(x=>parseInt(x.trim(),10)).filter(x=>Number.isInteger(x)&&x>0))].slice(0,3);
+ if(!pages.length){status.textContent="Indicá al menos un número de página válido.";return}
+ button.disabled=true;status.textContent="Renderizando páginas del PDF…";
+ try{
+  pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  const bytes=await file.arrayBuffer(),pdf=await pdfjsLib.getDocument({data:bytes}).promise;
+  const output=[];
+  for(const pageNo of pages){
+   if(pageNo>pdf.numPages)throw Error("El PDF tiene "+pdf.numPages+" páginas; la página "+pageNo+" no existe.");
+   const page=await pdf.getPage(pageNo),viewport=page.getViewport({scale:Math.min(1.25,1000/page.getViewport({scale:1}).width)});
+   const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
+   canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
+   await page.render({canvasContext:ctx,viewport}).promise;
+   output.push({page:pageNo,dataUrl:canvas.toDataURL("image/jpeg",.72)});
+   canvas.width=canvas.height=1;
+  }
+  referencePages=output;renderReferencePages();renderPreview();
+  const size=Math.round(referencePages.reduce((n,p)=>n+p.dataUrl.length,0)*.75/1024);
+  status.textContent=pages.length+" página(s) incorporada(s) · aprox. "+size+" KB. Guardá el modelo y exportá su JSON para conservarlas.";
+ }catch(e){status.textContent="No se pudieron cargar las páginas: "+e.message}
+ finally{button.disabled=false}
 }
 function fill(model){
- editingId=model?.id||null;$("#modelName").value=model?.name||"";$("#modelCategory").value=model?.category||"Personalizados";$("#modelDescription").value=model?.description||"";$("#modelPrompt").value=model?.instructions||model?.prompt||"";
+ editingId=model?.id||null;referencePages=Array.isArray(model?.referencePages)?model.referencePages.slice(0,3):[];$("#modelName").value=model?.name||"";$("#modelCategory").value=model?.category||"Personalizados";$("#modelDescription").value=model?.description||"";$("#modelPrompt").value=model?.instructions||model?.prompt||"";
  const legacy=String(model?.structure||"").split(";").map((name,i)=>({id:"legacy-"+i+"-"+slug(name),title:name.trim(),description:"Sección importada del modelo original.",instruction:"Desarrollar esta sección respetando las instrucciones generales del modelo.",enabled:true,order:i})).filter(c=>c.title);
  components=(model?.components||legacy.length?model?.components||legacy:CATALOG.slice(0,5).map(c=>({...c,enabled:true}))).map((c,i)=>({...c,order:c.order??i}));
  renderComponents();$("#modelSaveStatus").textContent=model?"Editando modelo: "+model.name+" · Los cambios se guardan como versión modular local.":"Nuevo modelo. Guardalo localmente y exportalo cuando esté listo.";
@@ -165,12 +197,12 @@ Antes de responder, verificá JSON válido, IDs únicos, campos completos y que 
 function importModel(file){const r=new FileReader();r.onload=()=>{try{const m=JSON.parse(r.result);if(m.schema!=="doculab.model/v1"||!Array.isArray(m.components))throw Error("Formato de modelo no reconocido");fill(m);toast("Modelo importado al editor")}catch(e){toast("No se pudo importar: "+e.message)}};r.readAsText(file)}
 function init(){
  if(!$("#componentList"))return;
- fill(null);
+ fill(null);renderReferencePages();
  $("#componentList").addEventListener("click",e=>{const row=e.target.closest("[data-index]");if(!row)return;const i=Number(row.dataset.index),delta=Number(e.target.dataset.move);if(!Number.isNaN(delta)&&delta){const j=i+delta;if(j>=0&&j<components.length)[components[i],components[j]]=[components[j],components[i]];renderComponents()}});
  $("#componentList").addEventListener("change",e=>{const row=e.target.closest("[data-index]");if(!row)return;const i=Number(row.dataset.index);if(e.target.matches("[data-toggle]")){components[i].enabled=e.target.checked;renderComponents()}else if(e.target.matches("[data-sample]")){components[i].preview=e.target.value;renderPreview()}});$("#componentList").addEventListener("input",e=>{const row=e.target.closest("[data-index]");if(!row||!e.target.matches("[data-sample]"))return;components[Number(row.dataset.index)].preview=e.target.value;renderPreview()});
  ["modelName","modelCategory","modelDescription"].forEach(id=>$("#"+id).addEventListener("input",renderPreview));
  $("#addComponent").onclick=()=>{const id=$("#addComponentSelect").value,c=CATALOG.find(x=>x.id===id);if(!c)return;components.push({...c,enabled:true});renderComponents()};
- $("#saveModel").onclick=saveModel;$("#designModelWithAI").onclick=designWithAI;$("#analyzePdfModel").onclick=designModelFromPDF;$("#copyExternalPdfPrompt").onclick=async()=>{try{await navigator.clipboard.writeText(buildExternalPdfPrompt());$("#externalPdfPromptStatus").textContent="Prompt copiado. Adjuntá el PDF en la IA que prefieras y pegalo allí."}catch{$("#externalPdfPromptText").value=buildExternalPdfPrompt();$("#externalPdfPromptText").focus();$("#externalPdfPromptText").select();$("#externalPdfPromptStatus").textContent="Seleccioné el prompt para que puedas copiarlo con Ctrl+C."}};$("#showExternalPdfPrompt").onclick=()=>{const box=$("#externalPdfPromptBox");box.hidden=!box.hidden;if(!box.hidden)$("#externalPdfPromptText").value=buildExternalPdfPrompt()};$("#importPastedModel").onclick=()=>{try{let raw=$("#pastedModelJson").value.trim().replace(/^\\x60{3}(?:json)?\\s*/i,"").replace(/\\s*\\x60{3}$/,"");const match=raw.match(/\\{[\\s\\S]*\\}/);if(match)raw=match[0];const model=JSON.parse(raw);if(!Array.isArray(model.components)||!model.components.length)throw Error("Falta el arreglo components");if(model.components.length>100)throw Error("El JSON contiene demasiados componentes");const ids=new Set();model.components.forEach((c,i)=>{if(!c||typeof c!=="object"||!c.title)throw Error("Componente "+(i+1)+" sin título");c.id=slug(c.id||c.title||("seccion-"+(i+1)));if(ids.has(c.id))c.id+="-"+(i+1);ids.add(c.id);c.enabled=c.enabled!==false;c.order=i;c.description=String(c.description||"");c.instruction=String(c.instruction||"");c.preview=String(c.preview||"")});model.schema="doculab.model/v1";model.id=editingId||model.id||"model_"+slug(model.name||"modelo-importado");model.name=String(model.name||"Modelo importado desde IA");model.category=String(model.category||"Personalizados");model.description=String(model.description||"");model.instructions=String(model.instructions||"");model.components=model.components;fill(model);$("#pastedModelStatus").textContent="JSON convertido en modelo editable. Revisá la estructura y guardalo.";toast("Modelo importado desde JSON")}catch(e){$("#pastedModelStatus").textContent="No se pudo importar: "+e.message;toast("Revisá el JSON pegado")}};$("#modelPdfFile").onchange=e=>{const f=e.target.files?.[0];$("#pdfModelStatus").textContent=f?f.name+" · "+(f.size/1024/1024).toFixed(1)+" MB":"Ningún PDF seleccionado";$("#pdfExtractPreview").textContent=""};$("#exportModelJson").onclick=exportModel;$("#exportModelIndex").onclick=exportIndex;
+ $("#renderReferencePdf").onclick=addReferencePdfPages;$("#clearReferencePdf").onclick=()=>{referencePages=[];renderReferencePages();renderPreview();$("#referencePdfStatus").textContent="Referencia eliminada. Guardá el modelo para actualizarlo."};$("#saveModel").onclick=saveModel;$("#designModelWithAI").onclick=designWithAI;$("#analyzePdfModel").onclick=designModelFromPDF;$("#copyExternalPdfPrompt").onclick=async()=>{try{await navigator.clipboard.writeText(buildExternalPdfPrompt());$("#externalPdfPromptStatus").textContent="Prompt copiado. Adjuntá el PDF en la IA que prefieras y pegalo allí."}catch{$("#externalPdfPromptText").value=buildExternalPdfPrompt();$("#externalPdfPromptText").focus();$("#externalPdfPromptText").select();$("#externalPdfPromptStatus").textContent="Seleccioné el prompt para que puedas copiarlo con Ctrl+C."}};$("#showExternalPdfPrompt").onclick=()=>{const box=$("#externalPdfPromptBox");box.hidden=!box.hidden;if(!box.hidden)$("#externalPdfPromptText").value=buildExternalPdfPrompt()};$("#importPastedModel").onclick=()=>{try{let raw=$("#pastedModelJson").value.trim().replace(/^\\x60{3}(?:json)?\\s*/i,"").replace(/\\s*\\x60{3}$/,"");const match=raw.match(/\\{[\\s\\S]*\\}/);if(match)raw=match[0];const model=JSON.parse(raw);if(!Array.isArray(model.components)||!model.components.length)throw Error("Falta el arreglo components");if(model.components.length>100)throw Error("El JSON contiene demasiados componentes");const ids=new Set();model.components.forEach((c,i)=>{if(!c||typeof c!=="object"||!c.title)throw Error("Componente "+(i+1)+" sin título");c.id=slug(c.id||c.title||("seccion-"+(i+1)));if(ids.has(c.id))c.id+="-"+(i+1);ids.add(c.id);c.enabled=c.enabled!==false;c.order=i;c.description=String(c.description||"");c.instruction=String(c.instruction||"");c.preview=String(c.preview||"")});model.schema="doculab.model/v1";model.id=editingId||model.id||"model_"+slug(model.name||"modelo-importado");model.name=String(model.name||"Modelo importado desde IA");model.category=String(model.category||"Personalizados");model.description=String(model.description||"");model.instructions=String(model.instructions||"");model.components=model.components;fill(model);$("#pastedModelStatus").textContent="JSON convertido en modelo editable. Revisá la estructura y guardalo.";toast("Modelo importado desde JSON")}catch(e){$("#pastedModelStatus").textContent="No se pudo importar: "+e.message;toast("Revisá el JSON pegado")}};$("#modelPdfFile").onchange=e=>{const f=e.target.files?.[0];$("#pdfModelStatus").textContent=f?f.name+" · "+(f.size/1024/1024).toFixed(1)+" MB":"Ningún PDF seleccionado";$("#pdfExtractPreview").textContent=""};$("#exportModelJson").onclick=exportModel;$("#exportModelIndex").onclick=exportIndex;
  $("#importModelJson").onchange=e=>{const f=e.target.files?.[0];if(f)importModel(f);e.target.value=""};
  $("#clearModelForm").onclick=()=>{if(components.length&&$("#modelName").value&&!confirm("¿Empezar un modelo nuevo? Los cambios no guardados se perderán."))return;fill(null)};
 }
