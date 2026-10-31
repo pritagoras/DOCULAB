@@ -91,12 +91,23 @@ function renderModelInfo(){
  const box=$("#modelInfo"),provider=$("#aiProvider").value,id=$("#aiModel").value.trim();
  if(!id){box.innerHTML="<b>Modelo sin seleccionar</b><p>Elegí un modelo detectado o escribí su identificador. Las características se muestran cuando el proveedor las informa.</p>";return}
  const item=discoveredModels.find(x=>x.id===id);
+ const specs={
+  "gpt-6-astra":{context:"1.050.000",output:"128.000",price:"USD 10 entrada / USD 50 salida por millón de tokens",url:"https://developers.openai.com/api/docs/models/gpt-6-astra"},
+  "gpt-6.1-sol":{context:"1.050.000",output:"128.000",price:"USD 2 entrada / USD 10 salida por millón de tokens",url:"https://developers.openai.com/api/docs/models/gpt-6.1-sol"},
+  "gpt-6.1-terra":{context:"1.050.000",output:"128.000",price:"USD 1 entrada / USD 5 salida por millón de tokens",url:"https://developers.openai.com/api/docs/models/gpt-6.1-terra"},
+  "gpt-6-luna":{context:"1.050.000",output:"128.000",price:"USD 0,10 entrada / USD 0,50 salida por millón de tokens",url:"https://developers.openai.com/api/docs/models/gpt-6-luna"},
+  "gemini-3.8-flash":{context:"1.048.576",output:"65.536",price:"USD 0,75 entrada / USD 3,75 salida por millón de tokens hasta el 31/12/2026",url:"https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash"}
+ };
+ const spec=specs[id]||{};
  let details=[];
- if(item?.inputTokenLimit)details.push("Entrada máx.: "+Number(item.inputTokenLimit).toLocaleString("es-AR")+" tokens");
- if(item?.outputTokenLimit)details.push("Salida máx.: "+Number(item.outputTokenLimit).toLocaleString("es-AR")+" tokens");
+ const input=item?.inputTokenLimit||spec.context,output=item?.outputTokenLimit||spec.output;
+ if(input)details.push("Entrada/contexto máx.: "+Number(input).toLocaleString("es-AR")+" tokens");
+ if(output)details.push("Salida máx.: "+Number(output).toLocaleString("es-AR")+" tokens");
+ if(spec.price)details.push(spec.price);
  if(item?.owned_by)details.push("Propietario: "+esc(item.owned_by));
  if(item?.description)details.push(esc(item.description));
- box.innerHTML="<b>"+esc(id)+"</b><p>"+(details.length?details.join(" · "):provider==="ollama"?"Modelo local detectado. El contexto depende de la configuración y de los metadatos del modelo.":"Modelo seleccionado. El contexto exacto y las funciones disponibles deben verificarse en la ficha oficial.")+"</p>";
+ const note=provider==="ollama"?"Modelo local detectado. La ventana real puede depender de la configuración de Ollama y de la memoria disponible.":details.length?"Datos publicados del modelo; los límites de uso de tu cuenta se consultan por separado.":"El modelo está disponible en el catálogo, pero DOCULAB no tiene una ficha técnica verificada para este ID.";
+ box.innerHTML="<b>"+esc(id)+"</b><p>"+(details.length?details.join(" · ")+" · ": "")+note+"</p>"+(spec.url?'<a href="'+spec.url+'" target="_blank" rel="noopener">Ficha técnica oficial ↗</a>':"");
 }
 async function refreshModels(){
  const provider=$("#aiProvider").value,base=$("#aiEndpoint").value.replace(/\/+$/,""),button=$("#refreshModels");
