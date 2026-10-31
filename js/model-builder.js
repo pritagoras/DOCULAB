@@ -43,7 +43,22 @@ function saveModel(){
  const all=load(),i=all.findIndex(x=>x.id===m.id);if(i>=0)all[i]=m;else all.unshift(m);save(all);editingId=m.id;window.dispatchEvent(new CustomEvent("doculab:templates-changed"));$("#modelSaveStatus").textContent="Guardado localmente · "+m.name;toast("Modelo guardado en este navegador");
 }
 function download(name,data,type){const blob=new Blob([data],{type}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
-function exportModel(){const m=current();if(!m.name){toast("Poné un nombre antes de exportar");return}download(slug(m.name)+".model.json",JSON.stringify(m,null,2),"application/json");$("#modelSaveStatus").textContent="JSON exportado. Copialo a models/"+slug(m.name)+"/model.json en tu repositorio."}
+let repositoryEntries=[];
+async function loadRepositoryModels(){
+ try{
+  const response=await fetch("./models/index.json",{cache:"no-store"});if(!response.ok)return;
+  const manifest=await response.json();if(manifest.schema!=="doculab.models-index/v1"||!Array.isArray(manifest.models))return;
+  repositoryEntries=manifest.models;
+  const loaded=[];
+  for(const entry of manifest.models){
+   if(!entry.path||!/^models\\/[a-z0-9-]+\\/model\\.json$/i.test(entry.path))continue;
+   try{const file=await fetch("./"+entry.path,{cache:"no-store"});if(!file.ok)continue;const model=await file.json();if(model.schema==="doculab.model/v1"&&Array.isArray(model.components))loaded.push(model)}catch{}
+  }
+  if(loaded.length){const local=load(),merged=[...loaded,...local.filter(x=>!loaded.some(y=>y.id===x.id))];save(merged);window.dispatchEvent(new CustomEvent("doculab:templates-changed"))}
+ }catch{}
+}
+function exportModel(){const m=current();if(!m.name){toast("Poné un nombre antes de exportar");return}const path="models/"+slug(m.name)+"/model.json";m.id=m.id||"model_"+slug(m.name);download("model.json",JSON.stringify(m,null,2),"application/json");$("#modelSaveStatus").textContent="Archivo exportado. Guardalo en "+path+" dentro del repositorio."}
+function exportIndex(){const m=current();if(!m.name){toast("Poné un nombre antes de exportar");return}const path="models/"+slug(m.name)+"/model.json";const entries=[...repositoryEntries.filter(x=>x.path!==path),{id:m.id,name:m.name,path}].sort((a,b)=>a.name.localeCompare(b.name));const manifest={schema:"doculab.models-index/v1",updated:new Date().toISOString(),models:entries};download("index.json",JSON.stringify(manifest,null,2),"application/json");$("#modelSaveStatus").textContent="Copiá este index.json a models/index.json en el repositorio."}
 function importModel(file){const r=new FileReader();r.onload=()=>{try{const m=JSON.parse(r.result);if(m.schema!=="doculab.model/v1"||!Array.isArray(m.components))throw Error("Formato de modelo no reconocido");fill(m);toast("Modelo importado al editor")}catch(e){toast("No se pudo importar: "+e.message)}};r.readAsText(file)}
 function init(){
  if(!$("#componentList"))return;
@@ -52,9 +67,9 @@ function init(){
  $("#componentList").addEventListener("change",e=>{const row=e.target.closest("[data-index]");if(!row||!e.target.matches("[data-toggle]"))return;components[Number(row.dataset.index)].enabled=e.target.checked;renderComponents()});
  ["modelName","modelCategory","modelDescription"].forEach(id=>$("#"+id).addEventListener("input",renderPreview));
  $("#addComponent").onclick=()=>{const id=$("#addComponentSelect").value,c=CATALOG.find(x=>x.id===id);if(!c)return;components.push({...c,enabled:true});renderComponents()};
- $("#saveModel").onclick=saveModel;$("#exportModelJson").onclick=exportModel;
+ $("#saveModel").onclick=saveModel;$("#exportModelJson").onclick=exportModel;$("#exportModelIndex").onclick=exportIndex;
  $("#importModelJson").onchange=e=>{const f=e.target.files?.[0];if(f)importModel(f);e.target.value=""};
  $("#clearModelForm").onclick=()=>{if(components.length&&$("#modelName").value&&!confirm("¿Empezar un modelo nuevo? Los cambios no guardados se perderán."))return;fill(null)};
 }
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{init();loadRepositoryModels()});else{init();loadRepositoryModels()}
 })();
