@@ -47,7 +47,7 @@ Proveedores del puente local:
 - Google Gemini API.
 - Endpoints compatibles con la API de OpenAI.
 
-Las claves API se envían al puente local para la solicitud y no se guardan en el repositorio. No se deben incluir claves en archivos públicos.
+Las claves API se guardan desde Settings en `local_server/.env`, un archivo privado de tu PC excluido mediante `.gitignore`. El puente local las lee directamente al generar contenido; no las devuelve al navegador ni las incluye en solicitudes desde el frontend. También podés copiar `local_server/.env.example` como `.env` y completar las variables manualmente. El archivo `.env` contiene texto sin cifrar: mantenelo dentro de tu usuario de Windows y nunca lo compartas ni lo subas al repositorio. Si usás GitHub Pages, abrí la copia local mediante `INICIAR_DOCULAB.bat` para que el navegador pueda comunicarse con el puente local.
 
 ## Publicación
 
