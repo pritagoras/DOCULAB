@@ -76,6 +76,35 @@ async function designWithAI(){
  }catch(e){toast("No se pudo diseñar el modelo: "+e.message)}
  finally{button.disabled=false;button.textContent="Proponer estructura con IA"}
 }
+async function designModelFromPDF(){
+ const file=$("#modelPdfFile")?.files?.[0],provider=$("#aiProvider")?.value||"none";
+ if(!file){toast("Seleccioná un archivo PDF primero");return}
+ if(provider==="none"){toast("Elegí un proveedor de IA en Configuración");return}
+ if(file.type!=="application/pdf"&&!file.name.toLowerCase().endsWith(".pdf")){toast("El archivo seleccionado no parece ser un PDF");return}
+ const button=$("#analyzePdfModel"),status=$("#pdfModelStatus"),preview=$("#pdfExtractPreview");
+ button.disabled=true;button.textContent="Leyendo PDF…";status.textContent="Extrayendo texto del documento…";
+ try{
+  const endpoint=$("#aiEndpoint").value.replace(/\/+$/,"");
+  const extracted=await fetch(endpoint+"/api/extract-pdf",{method:"POST",headers:{"Content-Type":"application/pdf","X-Filename":encodeURIComponent(file.name)},body:file});
+  const extraction=await extracted.json();if(!extracted.ok)throw Error(extraction.detail||"No se pudo leer el PDF");
+  const source=String(extraction.text||"").trim();if(source.length<80)throw Error("El PDF no contiene suficiente texto seleccionable. Si es un escaneo, primero necesitás OCR.");
+  status.textContent="PDF leído · "+(extraction.pages||"?")+" páginas · "+source.length.toLocaleString("es-AR")+" caracteres. Analizando estructura con IA…";
+  preview.textContent=source.slice(0,18000)+(source.length>18000?"\n\n[Vista previa truncada; la IA recibe el texto completo hasta el límite de extracción.]":"");
+  const name=$("#modelName").value.trim()||file.name.replace(/\.pdf$/i,"").replace(/[_-]+/g," ");
+  const category=$("#modelCategory").value.trim()||"Documentación";
+  const rules=$("#modelPrompt").value.trim();
+  const prompt=`Analizá el documento fuente y construí una plantilla modular DOCULAB que reproduzca su estructura editorial y funcional. No redactes el documento final: inferí la arquitectura reutilizable del modelo. Identificá títulos, niveles jerárquicos, orden de secciones, subsecciones recurrentes, tablas, actividades, cuadros, bibliografía, anexos y convenciones de formato que realmente aparezcan. Agrupá subapartados cuando convenga, pero no aplanes la jerarquía ni inventes secciones. Cada componente debe poder activarse/desactivarse independientemente. En "preview" poné una muestra breve que represente el tipo de contenido de esa sección, sin copiar largos fragmentos. Devolvé SOLO JSON válido, sin Markdown, con este esquema exacto: {"schema":"doculab.model/v1","id":"model-id","name":"nombre","category":"categoría","description":"descripción","instructions":"instrucciones reutilizables","components":[{"id":"slug-simple","title":"título fiel a la fuente","description":"función de la sección","instruction":"instrucciones para producir esa sección","preview":"muestra breve","enabled":true,"order":0}],"version":1}. Usá entre 4 y 18 componentes según la complejidad real. Si hay numeración o jerarquía explícita, preservala en títulos/descripciones. No inventes autores, citas ni metadatos. Nombre sugerido: ${name}. Categoría: ${category}. Reglas del usuario: ${rules||"Conservar con fidelidad la estructura del PDF y convertirla en una plantilla reutilizable."}.\n\nDOCUMENTO FUENTE (extraído del PDF):\n${source.slice(0,100000)}`;
+  button.textContent="Diseñando modelo…";status.textContent="La IA está reconstruyendo la estructura del PDF…";
+  const response=await fetch(endpoint+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({provider,model:$("#aiModel").value,prompt,api_key:""})});
+  const result=await response.json();if(!response.ok)throw Error(result.detail||"La IA no pudo analizar el documento");
+  let raw=String(result.text||"").trim().replace(/^\x60{3}(?:json)?\s*/i,"").replace(/\s*\x60{3}$/,"");
+  const match=raw.match(/\{[\s\S]*\}/);if(match)raw=match[0];
+  const model=JSON.parse(raw);if(!Array.isArray(model.components)||!model.components.length)throw Error("La IA no devolvió componentes válidos");
+  model.schema="doculab.model/v1";model.id=editingId||model.id||"model_"+slug(name);model.name=model.name||name;model.category=model.category||category;model.description=model.description||"Modelo reconstruido a partir de "+file.name;model.instructions=model.instructions||rules;model.components=model.components.map((c,i)=>({...c,id:slug(c.id||c.title||("seccion-"+(i+1))),title:String(c.title||("Sección "+(i+1))),description:String(c.description||""),instruction:String(c.instruction||""),preview:String(c.preview||""),enabled:c.enabled!==false,order:i}));
+  fill(model);status.textContent="Modelo generado desde "+file.name+". Revisá y ajustá los componentes antes de guardarlo.";toast("Modelo reconstruido desde el PDF");renderObservedUsage?.(result);
+ }catch(e){status.textContent="No se pudo crear el modelo: "+e.message;toast("Error al analizar el PDF")}
+ finally{button.disabled=false;button.textContent="Analizar PDF y crear modelo"}
+}
 function importModel(file){const r=new FileReader();r.onload=()=>{try{const m=JSON.parse(r.result);if(m.schema!=="doculab.model/v1"||!Array.isArray(m.components))throw Error("Formato de modelo no reconocido");fill(m);toast("Modelo importado al editor")}catch(e){toast("No se pudo importar: "+e.message)}};r.readAsText(file)}
 function init(){
  if(!$("#componentList"))return;
@@ -84,7 +113,7 @@ function init(){
  $("#componentList").addEventListener("change",e=>{const row=e.target.closest("[data-index]");if(!row)return;const i=Number(row.dataset.index);if(e.target.matches("[data-toggle]")){components[i].enabled=e.target.checked;renderComponents()}else if(e.target.matches("[data-sample]")){components[i].preview=e.target.value;renderPreview()}});$("#componentList").addEventListener("input",e=>{const row=e.target.closest("[data-index]");if(!row||!e.target.matches("[data-sample]"))return;components[Number(row.dataset.index)].preview=e.target.value;renderPreview()});
  ["modelName","modelCategory","modelDescription"].forEach(id=>$("#"+id).addEventListener("input",renderPreview));
  $("#addComponent").onclick=()=>{const id=$("#addComponentSelect").value,c=CATALOG.find(x=>x.id===id);if(!c)return;components.push({...c,enabled:true});renderComponents()};
- $("#saveModel").onclick=saveModel;$("#designModelWithAI").onclick=designWithAI;$("#exportModelJson").onclick=exportModel;$("#exportModelIndex").onclick=exportIndex;
+ $("#saveModel").onclick=saveModel;$("#designModelWithAI").onclick=designWithAI;$("#analyzePdfModel").onclick=designModelFromPDF;$("#modelPdfFile").onchange=e=>{const f=e.target.files?.[0];$("#pdfModelStatus").textContent=f?f.name+" · "+(f.size/1024/1024).toFixed(1)+" MB":"Ningún PDF seleccionado";$("#pdfExtractPreview").textContent=""};$("#exportModelJson").onclick=exportModel;$("#exportModelIndex").onclick=exportIndex;
  $("#importModelJson").onchange=e=>{const f=e.target.files?.[0];if(f)importModel(f);e.target.value=""};
  $("#clearModelForm").onclick=()=>{if(components.length&&$("#modelName").value&&!confirm("¿Empezar un modelo nuevo? Los cambios no guardados se perderán."))return;fill(null)};
 }
