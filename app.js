@@ -119,8 +119,8 @@ function renderModelInfo(){
  const spec=specs[id]||{};
  let details=[];
  const input=item?.inputTokenLimit||spec.context,output=item?.outputTokenLimit||spec.output;
- if(input)details.push("Entrada/contexto máx.: "+Number(input).toLocaleString("es-AR")+" tokens");
- if(output)details.push("Salida máx.: "+Number(output).toLocaleString("es-AR")+" tokens");
+ if(input)details.push("Entrada/contexto máx.: "+(typeof input==="number"?input.toLocaleString("es-AR"):String(input))+" tokens");
+ if(output)details.push("Salida máx.: "+(typeof output==="number"?output.toLocaleString("es-AR"):String(output))+" tokens");
  if(spec.price)details.push(spec.price);
  if(item?.owned_by)details.push("Propietario: "+esc(item.owned_by));
  if(item?.description)details.push(esc(item.description));
