@@ -6,9 +6,9 @@
 
 DOCULAB separa el diseño asistido por IA del uso cotidiano de los modelos:
 
-- La IA puede crear, revisar o ampliar una plantilla.
+- La IA puede proponer, revisar o ampliar una plantilla desde el constructor.
 - La plantilla se guarda como JSON y define sus componentes, orden, instrucciones y estado activo.
-- Una plantilla guardada se puede abrir, previsualizar y utilizar sin conectarse a ningún modelo de lenguaje.
+- Una plantilla guardada se puede abrir, previsualizar y utilizar sin conectarse a ningún modelo de lenguaje; DOCULAB puede generar su estructura vacía para completarla manualmente.
 - Los modelos versionados en Git se cargan desde `models/index.json`.
 
 ## Modelos versionados en Git
@@ -88,6 +88,8 @@ Para OpenAI o Gemini, elegir el proveedor correspondiente, ingresar la clave API
 
 - Biblioteca inicial de modelos.
 - Constructor modular con activar/desactivar y reordenar componentes.
+- Previsualización en tiempo real y propuesta de estructuras con IA.
+- Generación de una estructura documental editable sin IA.
 - Previsualización de estructura.
 - Guardado local de plantillas y proyectos.
 - Importación y exportación JSON.
