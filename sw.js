@@ -1,1 +1,52 @@
-const CACHE="doculab-v6";const FILES=["./","./index.html","./styles.css","./app.js","./js/model-builder.js","./js/document-editor.js","./manifest.webmanifest","./assets/icon.svg","./models/index.json","./models/guia-academica-modular/model.json"];self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES))));self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;e.respondWith(caches.match(e.request).then(cached=>cached||fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r}).catch(()=>caches.match("./index.html"))))});
+// DOCULAB service worker.
+// Estrategia: red primero para los archivos propios (así los cambios publicados
+// llegan sin tener que borrar la caché) y caché como respaldo sin conexión.
+const CACHE = "doculab-v7";
+const FILES = [
+  "./",
+  "./index.html",
+  "./styles.css",
+  "./app.js",
+  "./js/model-builder.js",
+  "./js/document-editor.js",
+  "./manifest.webmanifest",
+  "./assets/icon.svg",
+  "./models/index.json",
+  "./models/guia-academica-modular/model.json"
+];
+
+self.addEventListener("install", event => {
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES)));
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener("fetch", event => {
+  const request = event.request;
+  if (request.method !== "GET") return;
+  const url = new URL(request.url);
+
+  // Fuentes y otros orígenes externos: sin intervención.
+  if (url.origin !== self.location.origin) return;
+  // El puente local de IA nunca se cachea.
+  if (url.pathname.startsWith("/api/")) return;
+
+  event.respondWith(
+    fetch(request)
+      .then(response => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE).then(cache => cache.put(request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(request).then(cached => cached || caches.match("./index.html")))
+  );
+});

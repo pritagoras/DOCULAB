@@ -97,5 +97,6 @@ Para OpenAI o Gemini, elegir el proveedor correspondiente, ingresar la clave API
 - Carga de plantillas versionadas en Git.
 - Generación de documentos con proveedores IA configurados.
 - Exportación HTML e impresión / Guardar como PDF.
+- Interfaz con modo claro y oscuro automáticos (según el sistema), navegación por teclado (teclas 1–4 para cambiar de sección, Esc para cerrar la vista previa) y diseño adaptable a móvil.
 
 La importación directa de PDF/DOCX y la sincronización automática no están incluidas todavía.

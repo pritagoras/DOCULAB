@@ -3,14 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#111827">
+  <meta name="theme-color" content="#0e1522">
+  <meta name="color-scheme" content="light dark">
   <meta name="description" content="DOCULAB — biblioteca y estudio de producción documental asistido por IA.">
   <title>DOCULAB — Document Studio</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#main">Saltar al contenido</a>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <a class="brand" href="#" aria-label="DOCULAB inicio">
@@ -21,15 +26,15 @@
       <button class="nav-item" data-view="builder"><span>⌘</span> Constructor de modelos <kbd>03</kbd></button>
       <button class="nav-item" data-view="projects"><span>▤</span> Mis proyectos <kbd>04</kbd></button>
       <div class="sidebar-bottom">
-        <div class="connection-card">
-          <span class="status-dot" id="connectionDot"></span>
+        <div class="connection-card" aria-live="polite">
+          <span class="status-dot off" id="connectionDot"></span>
           <div><b id="connectionLabel">Modo navegador</b><small id="connectionSub">Almacenamiento local</small></div>
         </div>
         <button class="nav-item" data-view="settings"><span>⚙</span> Configuración</button>
-        <small class="version">DOCULAB · v0.1.0</small>
+        <small class="version">DOCULAB · v0.2.0</small>
       </div>
     </aside>
-    <main class="main">
+    <main class="main" id="main" tabindex="-1">
       <header class="topbar">
         <button class="mobile-menu" id="mobileMenu" aria-label="Abrir menú">☰</button>
         <div class="breadcrumbs"><span>Workspace</span><i>/</i><b id="crumb">Biblioteca</b></div>
@@ -37,9 +42,9 @@
       </header>
       <section class="view active" id="view-library">
         <div class="page-heading"><div><div class="eyebrow">CENTRO DE RECURSOS</div><h1>Biblioteca de modelos</h1><p>Plantillas, instrucciones y estructuras reutilizables para producir documentos.</p></div><button class="button primary" id="newModelTop">＋ Nuevo modelo</button></div>
-        <div class="stats-row"><div class="stat-card"><span>Modelos disponibles</span><b id="statModels">12</b><small>Incluye plantillas iniciales</small></div><div class="stat-card"><span>Mis modelos</span><b id="statCustom">0</b><small>Modelos creados por vos</small></div><div class="stat-card"><span>Proyectos guardados</span><b id="statProjects">0</b><small>Documentos en preparación</small></div></div>
+        <div class="stats-row"><div class="stat-card"><span>Modelos disponibles</span><b id="statModels">0</b><small>Incluye plantillas iniciales</small></div><div class="stat-card"><span>Mis modelos</span><b id="statCustom">0</b><small>Modelos creados por vos</small></div><div class="stat-card"><span>Proyectos guardados</span><b id="statProjects">0</b><small>Documentos en preparación</small></div></div>
         <div class="library-toolbar"><label class="searchbox"><span>⌕</span><input id="searchInput" placeholder="Buscar modelos, categorías o palabras clave..."></label><select id="categoryFilter" aria-label="Filtrar por categoría"><option value="all">Todas las categorías</option></select><select id="sortFilter" aria-label="Ordenar"><option value="featured">Destacados</option><option value="az">Nombre A–Z</option><option value="newest">Más recientes</option></select></div>
-        <div class="section-line"><h2>Explorar modelos</h2><span id="resultCount">12 modelos</span></div><div class="model-grid" id="modelGrid"></div><div class="empty-state hidden" id="emptyLibrary"><b>No encontramos modelos</b><p>Probá con otra búsqueda o creá tu propia plantilla.</p></div>
+        <div class="section-line"><h2>Explorar modelos</h2><span id="resultCount" aria-live="polite">0 modelos</span></div><div class="model-grid" id="modelGrid"></div><div class="empty-state hidden" id="emptyLibrary"><b>No encontramos modelos</b><p>Probá con otra búsqueda o creá tu propia plantilla.</p></div>
       </section>
       <section class="view" id="view-studio">
         <div class="page-heading"><div><div class="eyebrow">PRODUCCIÓN DOCUMENTAL</div><h1>Crear documento</h1><p>Elegí un modelo, agregá tus fuentes y prepará el contenido.</p></div></div>
@@ -79,7 +84,7 @@
       <footer class="footer">DOCULAB <span>·</span> Un espacio modular para pensar, organizar y producir documentos.</footer>
     </main>
   </div>
-  <div class="toast" id="toast" role="status"></div><div class="modal-backdrop hidden" id="modelModal"><div class="modal panel"><button class="modal-close" id="closeModal">×</button><div id="modalContent"></div></div></div>
+  <div class="toast" id="toast" role="status"></div><div class="modal-backdrop hidden" id="modelModal"><div class="modal panel" role="dialog" aria-modal="true" aria-label="Vista previa del modelo"><button class="modal-close" id="closeModal" aria-label="Cerrar">×</button><div id="modalContent"></div></div></div>
   <script src="app.js"></script>
   <script src="js/model-builder.js"></script><script src="js/document-editor.js"></script>
 </body>
