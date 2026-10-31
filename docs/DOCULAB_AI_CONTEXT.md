@@ -125,3 +125,13 @@ Cada componente puede incluir la propiedad opcional `preview`, que contiene text
 
 ## Credenciales locales
 Las claves de OpenAI y Gemini pueden guardarse en `local_server/.env` mediante `POST /api/settings`. El archivo está excluido de Git mediante `.gitignore`. `GET /api/settings` devuelve únicamente indicadores booleanos de configuración, nunca los valores de las claves. El puente local lee las claves del archivo en cada solicitud. Las claves no se almacenan en `localStorage`, ni se exportan con modelos o proyectos. El archivo local no está cifrado: debe mantenerse privado en el equipo del usuario. El modo de guardado de claves requiere ejecutar el puente local en `127.0.0.1`.
+
+
+## Selector de proveedor y modelos
+La configuración permite seleccionar visualmente Sin proveedor, Ollama, OpenAI o Gemini. `GET /api/models?provider=<provider>` lista modelos instalados en Ollama, visibles en el endpoint `/v1/models` de OpenAI o compatibles con `generateContent` en Gemini. El selector permite además introducir IDs manualmente. Para Gemini se muestran `inputTokenLimit` y `outputTokenLimit` cuando el catálogo los informa. La ficha de algunos modelos populares incluye datos técnicos y precios de referencia versionados en el frontend; siempre se debe enlazar y consultar la ficha/precio oficial antes de asumir que el dato sigue vigente.
+
+## Límites y uso
+La interfaz explica RPM (solicitudes/minuto), TPM (tokens/minuto), RPD (solicitudes/día), contexto y facturación. Los límites activos de OpenAI dependen de modelo, organización, proyecto y tier; cuando la API incluye cabeceras `x-ratelimit-*`, el puente las devuelve como `rate_limits`. Gemini limita por modelo/proyecto/tier; DOCULAB muestra los límites de tokens informados por el catálogo y el consumo `usageMetadata` de cada respuesta, pero no puede consultar directamente la cuota restante de AI Studio. Los enlaces oficiales conducen a paneles de límites/uso. Ollama no factura tokens al proveedor: el límite es local y depende del modelo, memoria y hardware.
+
+## Tema visual
+La aplicación permite elegir claro u oscuro mediante el control de la barra superior. La preferencia se conserva en `localStorage` bajo `doculab_theme`; si no hay una preferencia previa, se usa inicialmente el tema del sistema.
