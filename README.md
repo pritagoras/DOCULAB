@@ -91,12 +91,14 @@ Para OpenAI o Gemini, elegir el proveedor correspondiente, ingresar la clave API
 - Editor de contenido independiente por componente, sin modificar el modelo base.
 - Previsualización de página actualizada automáticamente, exportación HTML e impresión / PDF.
 - Generación asistida por IA de secciones individuales.
-- Configuración guiada de proveedores, claves de sesión y prueba real de conexión.
+- Selector visual de proveedores, detección de modelos disponibles en Ollama/OpenAI/Gemini, ficha de modelo con contexto y precios de referencia, enlaces a cuotas y límites oficiales, y prueba real de conexión.
+- Visualización de límites observados en cabeceras de OpenAI y tokens consumidos en Gemini cuando la API los devuelve.
+- Modo claro/oscuro manual con preferencia persistente, además de detección inicial del tema del sistema.
 - Guardado local de plantillas y proyectos.
 - Importación y exportación JSON.
 - Carga de plantillas versionadas en Git.
 - Generación de documentos con proveedores IA configurados.
 - Exportación HTML e impresión / Guardar como PDF.
-- Interfaz con modo claro y oscuro automáticos (según el sistema), navegación por teclado (teclas 1–4 para cambiar de sección, Esc para cerrar la vista previa) y diseño adaptable a móvil.
+- Interfaz con modo claro/oscuro seleccionable y persistente (por defecto respeta el tema del sistema), navegación por teclado (teclas 1–4 para cambiar de sección, Esc para cerrar la vista previa) y diseño adaptable a móvil.
 
 La importación directa de PDF/DOCX y la sincronización automática no están incluidas todavía.
