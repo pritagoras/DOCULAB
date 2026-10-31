@@ -21,6 +21,16 @@ function toast(s){let t=$("#toast");t.textContent=s;t.classList.add("show");setT
 function go(n){$$(".view").forEach(x=>x.classList.toggle("active",x.id==="view-"+n));$$(".nav-item[data-view]").forEach(x=>{const on=x.dataset.view===n;x.classList.toggle("active",on);on?x.setAttribute("aria-current","page"):x.removeAttribute("aria-current")});$("#crumb").textContent=({library:"Biblioteca",studio:"Crear documento",builder:"Constructor de modelos",projects:"Mis proyectos",settings:"Configuración"})[n];$("#sidebar").classList.remove("open");if(n==="projects")renderProjects();if(n==="library")renderLibrary();window.scrollTo(0,0)}
 function renderLibrary(){let q=$("#searchInput").value.toLowerCase(),cat=$("#categoryFilter").value,sort=$("#sortFilter").value;let a=models().filter(m=>(cat==="all"||m.category===cat)&&[m.name,m.category,m.description].join(" ").toLowerCase().includes(q));if(sort==="az")a.sort((x,y)=>x.name.localeCompare(y.name));else if(sort==="newest")a.sort((x,y)=>(Date.parse(y.updated)||0)-(Date.parse(x.updated)||0));$("#modelGrid").innerHTML=a.map(m=>'<article class="model-card"><div class="card-top"><span class="model-icon">▤</span><span class="tag">'+esc(m.category)+'</span></div><h3>'+esc(m.name)+'</h3><p>'+esc(m.description)+'</p><div class="card-bottom"><button class="text-button" data-model="'+esc(m.id)+'">Ver preview ↗</button><button class="text-button" data-edit-model="'+esc(m.id)+'">Editar</button></div></article>').join("");$("#resultCount").textContent=a.length+" modelos";$("#emptyLibrary").classList.toggle("hidden",!!a.length);$("#statModels").textContent=models().length;$("#statCustom").textContent=custom.length;$("#statProjects").textContent=projects.length;let cats=[...new Set(models().map(x=>x.category))].sort(),old=cat;$("#categoryFilter").innerHTML='<option value="all">Todas las categorías</option>'+cats.map(c=>'<option>'+esc(c)+'</option>').join("");$("#categoryFilter").value=cats.includes(old)?old:"all"}
 function renderSelect(){let s=$("#studioModel");s.innerHTML=models().map(m=>'<option value="'+esc(m.id)+'">'+esc(m.name)+'</option>').join("");s.value=activeId}
+function editModel(id){
+ const model=models().find(item=>item.id===id);
+ if(!model){toast("No se encontró el modelo seleccionado.");return}
+ activeId=id;
+ window.dispatchEvent(new CustomEvent("doculab:edit-template",{detail:model}));
+ go("builder");
+ const name=model.name||"modelo";
+ const status=$("#modelSaveStatus");
+ if(status)status.textContent="Editando: "+name+". Los cambios no afectan al documento ni a otras plantillas hasta guardar.";
+}
 function modelSections(m){if(Array.isArray(m.components))return m.components.filter(c=>c.enabled!==false).sort((a,b)=>(a.order??0)-(b.order??0));return String(m.structure||"Desarrollo").split(";").map((name,i)=>({id:"legacy-"+i,title:name.trim(),enabled:true,order:i})).filter(c=>c.title)}
 function sampleBody(section,m){
  const t=String(section.title||"Sección").toLowerCase(),name=esc(m.name),desc=esc(m.description||"el tema de estudio");
