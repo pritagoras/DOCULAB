@@ -60,13 +60,9 @@ URL esperada: https://pritagoras.github.io/DOCULAB/
 
 ## Ejecutar localmente
 
-Desde la carpeta raíz del repositorio:
+Desde Windows, hacé doble clic en `INICIAR_DOCULAB.bat` en la carpeta raíz del repositorio. En el primer inicio crea un entorno Python e instala las dependencias; luego abre el navegador en http://localhost:8080 y levanta el puente local de IA en el puerto 8000. Dejá abiertas las dos ventanas de consola mientras uses DOCULAB. Requiere Python 3.10+ y conexión a Internet solo durante la instalación inicial de dependencias.
 
-```powershell
-python -m http.server 8080
-```
-
-Abrir http://localhost:8080.
+También podés iniciar solo la interfaz manualmente con `py -m http.server 8080` si no necesitás IA.
 
 ### Puente local de IA (opcional)
 
@@ -90,7 +86,10 @@ Para OpenAI o Gemini, elegir el proveedor correspondiente, ingresar la clave API
 - Constructor modular con activar/desactivar y reordenar componentes.
 - Previsualización en tiempo real y propuesta de estructuras con IA.
 - Generación de una estructura documental editable sin IA.
-- Previsualización de estructura.
+- Editor de contenido independiente por componente, sin modificar el modelo base.
+- Previsualización de página actualizada automáticamente, exportación HTML e impresión / PDF.
+- Generación asistida por IA de secciones individuales.
+- Configuración guiada de proveedores, claves de sesión y prueba real de conexión.
 - Guardado local de plantillas y proyectos.
 - Importación y exportación JSON.
 - Carga de plantillas versionadas en Git.
