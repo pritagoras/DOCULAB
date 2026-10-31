@@ -8,7 +8,8 @@ function activeModel(){const id=$("#studioModel")?.value;return (window.DOCULAB_
 function notify(message){const t=$("#toast");if(t){t.textContent=message;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}}
 function source(){return $("#sourceText")?.value||""}
 function build(){
- const model=activeModel(),comps=(model?.components||[]).filter(c=>c.enabled!==false).sort((a,b)=>(a.order??0)-(b.order??0));
+ const model=activeModel();let comps=(model?.components||[]).filter(c=>c.enabled!==false).sort((a,b)=>(a.order??0)-(b.order??0));
+ if(!comps.length&&model?.structure)comps=String(model.structure).split(";").map((name,i)=>({id:"section-"+i,title:name.trim(),instruction:"Desarrollar esta sección con precisión y coherencia.",enabled:true,order:i})).filter(c=>c.title);
  if(!comps.length){notify("Este modelo no tiene componentes configurados.");return}
  title=$("#docTitle").value.trim()||model.name||"Documento sin título";
  sections=comps.map((c,i)=>({id:c.id||"section-"+i,title:c.title||"Sección "+(i+1),instruction:c.instruction||"",content:""}));
