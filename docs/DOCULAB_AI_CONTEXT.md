@@ -118,3 +118,10 @@ La preview del constructor representa la estructura de la plantilla. La preview 
 
 ## 10. Instrucción para el asistente
 Antes de responder a una solicitud relacionada con DOCULAB, interpreta la petición dentro de esta arquitectura. Conserva la separación entre plantilla y documento, respeta el esquema `doculab.model/v1`, no prometas capacidades inexistentes y adapta las propuestas a las funciones realmente disponibles. El usuario decide qué cambios incorporar y publica manualmente desde GitHub Desktop.
+
+
+## Muestras de documento por modelo
+Cada componente puede incluir la propiedad opcional `preview`, que contiene texto de demostración propio de esa sección. El constructor permite editar ese texto en «Contenido de muestra para el PDF». El contenido se guarda dentro del modelo (`components[].preview`), se exporta con su JSON y se utiliza en la previsualización A4 y al imprimir el PDF de muestra. Si la propiedad está vacía, DOCULAB usa un texto de ejemplo automático según el tipo de sección. Este contenido es demostrativo y no debe confundirse con contenido académico generado desde fuentes.
+
+## Credenciales locales
+Las claves de OpenAI y Gemini pueden guardarse en `local_server/.env` mediante `POST /api/settings`. El archivo está excluido de Git mediante `.gitignore`. `GET /api/settings` devuelve únicamente indicadores booleanos de configuración, nunca los valores de las claves. El puente local lee las claves del archivo en cada solicitud. Las claves no se almacenan en `localStorage`, ni se exportan con modelos o proyectos. El archivo local no está cifrado: debe mantenerse privado en el equipo del usuario. El modo de guardado de claves requiere ejecutar el puente local en `127.0.0.1`.
