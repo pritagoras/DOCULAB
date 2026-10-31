@@ -1,0 +1,5 @@
+local_server/.env
+local_server/.venv/
+__pycache__/
+*.py[cod]
+.DS_Store
