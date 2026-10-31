@@ -84,7 +84,7 @@ Para OpenAI o Gemini, elegir el proveedor correspondiente, ingresar la clave API
 
 ## Alcance actual
 
-- Biblioteca inicial de modelos.
+- Biblioteca inicial de modelos con preview de estructura y edición de cualquier modelo cargado, incluidos los modelos iniciales heredados.
 - Constructor modular con activar/desactivar y reordenar componentes.
 - Previsualización en tiempo real y propuesta de estructuras con IA.
 - Generación de una estructura documental editable sin IA.
