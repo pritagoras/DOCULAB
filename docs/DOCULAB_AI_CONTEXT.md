@@ -88,7 +88,7 @@ La preview del constructor representa la estructura de la plantilla. La preview 
 ## 7. Integración de IA
 - El puente local FastAPI expone `GET /health` y `POST /api/generate`.
 - Proveedores admitidos: Ollama local, OpenAI API y Google Gemini API.
-- El cliente envía proveedor, modelo, prompt y, cuando corresponde, clave API.
+- El cliente envía proveedor, modelo y prompt. Para OpenAI y Gemini, el puente recupera la clave desde `local_server/.env` o desde variables de entorno del proceso; no requiere que el frontend envíe la clave.
 - Este archivo es el contexto permanente y debe agregarse automáticamente a cada solicitud, sin depender de que el frontend lo incluya.
 - Después del contexto permanente, el prompt de la tarea contiene instrucciones particulares, modelo seleccionado, sección actual, estilo, profundidad, indicaciones adicionales y material fuente.
 - Prioridad: respetar el contexto del programa y el esquema técnico; después, respetar instrucciones específicas del usuario y del modelo, siempre que no contradigan las limitaciones reales.
