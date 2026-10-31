@@ -1,7 +1,7 @@
 import os
-from pathlib import Path
+from pathlib import Path\nfrom io import BytesIO\nfrom urllib.parse import unquote
 import httpx
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request\nfrom pypdf import PdfReader
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -165,6 +165,46 @@ async def list_models(provider: str):
             raise HTTPException(exc.response.status_code, exc.response.text[:1000])
         except httpx.RequestError as exc:
             raise HTTPException(502, f"No se pudo obtener la lista de modelos: {exc}")
+
+@app.post("/api/extract-pdf")
+async def extract_pdf(request: Request):
+    """Extrae texto de un PDF sin guardar el archivo en disco."""
+    content_type = request.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+    if content_type != "application/pdf":
+        raise HTTPException(415, "El archivo debe enviarse como PDF.")
+    raw = await request.body()
+    if not raw:
+        raise HTTPException(400, "El PDF está vacío.")
+    if len(raw) > 20 * 1024 * 1024:
+        raise HTTPException(413, "El PDF supera el límite de 20 MB.")
+    try:
+        reader = PdfReader(BytesIO(raw), strict=False)
+        if reader.is_encrypted:
+            try:
+                reader.decrypt("")
+            except Exception:
+                raise HTTPException(422, "El PDF está protegido con contraseña.")
+        if len(reader.pages) > 300:
+            raise HTTPException(413, "El PDF supera el límite de 300 páginas.")
+        chunks = []
+        total = 0
+        for number, page in enumerate(reader.pages, start=1):
+            text = (page.extract_text() or "").strip()
+            if text:
+                chunks.append(f"--- Página {number} ---\n{text}")
+                total += len(text)
+            if total >= 120000:
+                break
+        extracted = "\n\n".join(chunks)[:120000]
+        if not extracted:
+            raise HTTPException(422, "No se pudo extraer texto. Si es un PDF escaneado, necesitás aplicar OCR antes.")
+        return {"filename": unquote(request.headers.get("x-filename", "documento.pdf")),
+                "pages": len(reader.pages), "characters": len(extracted), "text": extracted,
+                "truncated": total > 120000}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(422, f"No se pudo leer el PDF: {str(exc)[:300]}")
 
 @app.post("/api/generate")
 async def generate(req: GenerateRequest):
