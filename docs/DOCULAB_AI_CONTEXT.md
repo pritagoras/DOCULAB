@@ -112,7 +112,7 @@ La preview del constructor representa la estructura de la plantilla. La preview 
 - La IA local requiere Python, dependencias instaladas y proveedor disponible.
 - Ollama requiere un modelo descargado localmente.
 - OpenAI y Gemini requieren claves API y conexión a Internet.
-- La clave API introducida desde la interfaz es de sesión y no debe persistirse en localStorage.
+- Las claves API de OpenAI y Gemini pueden guardarse en `local_server/.env`, excluido de Git; el servidor las lee localmente y la interfaz no recibe su valor. El archivo no está cifrado.
 - La exportación PDF se realiza mediante el diálogo de impresión del navegador; la exportación HTML es un archivo independiente.
 - La importación directa y extracción automática de contenido desde PDF/DOCX no está implementada salvo que una versión futura la agregue expresamente.
 
