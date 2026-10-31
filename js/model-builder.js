@@ -1,0 +1,60 @@
+(() => {
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const CATALOG=[
+{id:"cover",title:"Portada",description:"Título, subtítulo y datos del documento.",instruction:"Crear una portada sobria con título, subtítulo y datos disponibles. No inventar autor ni institución."},
+{id:"index",title:"Índice",description:"Índice jerárquico de secciones.",instruction:"Crear un índice jerárquico coherente con los títulos y subtítulos realmente presentes."},
+{id:"objectives",title:"Objetivos de aprendizaje",description:"Objetivos claros y evaluables.",instruction:"Formular objetivos de aprendizaje concretos, observables y vinculados al contenido."},
+{id:"introduction",title:"Introducción",description:"Presentación del tema, alcance y organización.",instruction:"Introducir el tema, delimitar su alcance y explicar la organización del documento."},
+{id:"development",title:"Desarrollo conceptual",description:"Sección principal de exposición y articulación.",instruction:"Desarrollar los conceptos con precisión, explicar relaciones y conservar las distinciones relevantes."},
+{id:"question-bank",title:"Banco de preguntas",description:"Preguntas y respuestas de revisión.",instruction:"Crear preguntas variadas y respuestas fundamentadas exclusivamente en el material proporcionado."},
+{id:"glossary",title:"Glosario",description:"Términos y definiciones esenciales.",instruction:"Definir los términos técnicos relevantes y explicar su contexto cuando sea necesario."},
+{id:"comparison",title:"Cuadros comparativos",description:"Comparación por criterios equivalentes.",instruction:"Comparar conceptos mediante criterios equivalentes; no forzar semejanzas ni simetrías."},
+{id:"examples",title:"Ejemplos y aplicaciones",description:"Ejemplos vinculados con los conceptos.",instruction:"Incluir ejemplos pertinentes y diferenciarlos de las afirmaciones tomadas de las fuentes."},
+{id:"conclusion",title:"Conclusión",description:"Síntesis de resultados e ideas centrales.",instruction:"Cerrar con una síntesis que recupere los argumentos y resultados desarrollados, sin introducir temas nuevos."},
+{id:"bibliography",title:"Bibliografía",description:"Referencias de las fuentes proporcionadas.",instruction:"Listar únicamente referencias bibliográficas disponibles en el material. Marcar datos incompletos en lugar de inventarlos."},
+{id:"appendix",title:"Anexos",description:"Material complementario.",instruction:"Organizar el material complementario como anexos identificados y referenciados desde el cuerpo."}
+];
+let components=[],editingId=null;
+const load=()=>{try{return JSON.parse(localStorage.getItem("doculab_templates")||"[]")}catch{return []}};
+const save=(arr)=>localStorage.setItem("doculab_templates",JSON.stringify(arr));
+const slug=s=>(s||"modelo").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"modelo";
+function toast(s){const t=$("#toast");if(!t)return;t.textContent=s;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
+function current(){return {schema:"doculab.model/v1",id:editingId||"model_"+slug($("#modelName").value),name:$("#modelName").value.trim(),category:$("#modelCategory").value.trim()||"Personalizados",description:$("#modelDescription").value.trim(),instructions:$("#modelPrompt").value.trim(),components:components.map((c,i)=>({...c,order:i})),version:1,updated:new Date().toISOString()}}
+function renderComponents(){
+ const host=$("#componentList");if(!host)return;
+ host.innerHTML=components.map((c,i)=>'<div class="component-row '+(!c.enabled?"off":"")+'" data-index="'+i+'"><div class="component-order"><button type="button" data-move="-1" title="Subir" '+(i===0?"disabled":"")+'>↑</button><button type="button" data-move="1" title="Bajar" '+(i===components.length-1?"disabled":"")+'>↓</button></div><div class="component-main"><b>'+esc(c.title)+'</b><small>'+esc(c.description||"Componente personalizado")+'</small></div><label class="component-toggle"><input type="checkbox" data-toggle '+(c.enabled?"checked":"")+'> Incluir</label></div>').join("");
+ const sel=$("#addComponentSelect");const used=new Set(components.map(c=>c.id));sel.innerHTML='<option value="">Agregar componente…</option>'+CATALOG.filter(c=>!used.has(c.id)).map(c=>'<option value="'+c.id+'">'+esc(c.title)+'</option>').join("");
+ renderPreview();
+}
+function renderPreview(){
+ const enabled=components.filter(c=>c.enabled);$("#previewModelName").textContent=$("#modelName").value.trim()||"Nuevo modelo";$("#previewComponentCount").textContent=enabled.length+" secciones";
+ const title=esc($("#modelName").value.trim()||"Título del documento");
+ $("#modelPreview").innerHTML='<div class="doc-page"><div class="doc-kicker">DOCULAB · PLANTILLA DOCUMENTAL</div><h1>'+title+'</h1><p class="doc-placeholder" style="text-align:center">Subtítulo o descripción del documento</p>'+enabled.map((c,i)=>'<section class="doc-section"><h2>'+esc((i+1)+". "+c.title)+'</h2><p class="doc-placeholder">'+esc(c.preview||"El contenido de esta sección se completará al generar el documento.")+'</p></section>').join("")+'</div>';
+}
+function fill(model){
+ editingId=model?.id||null;$("#modelName").value=model?.name||"";$("#modelCategory").value=model?.category||"Personalizados";$("#modelDescription").value=model?.description||"";$("#modelPrompt").value=model?.instructions||"";
+ components=(model?.components||CATALOG.slice(0,5).map(c=>({...c,enabled:true}))).map(c=>({...c}));
+ renderComponents();$("#modelSaveStatus").textContent=model?"Editando modelo guardado: "+model.name:"Nuevo modelo. Guardalo localmente y exportalo cuando esté listo.";
+}
+function saveModel(){
+ const m=current();if(!m.name){toast("Poné un nombre al modelo");return}if(!m.components.some(c=>c.enabled)){toast("Activá al menos un componente");return}
+ const all=load(),i=all.findIndex(x=>x.id===m.id);if(i>=0)all[i]=m;else all.unshift(m);save(all);editingId=m.id;window.dispatchEvent(new CustomEvent("doculab:templates-changed"));$("#modelSaveStatus").textContent="Guardado localmente · "+m.name;toast("Modelo guardado en este navegador");
+}
+function download(name,data,type){const blob=new Blob([data],{type}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function exportModel(){const m=current();if(!m.name){toast("Poné un nombre antes de exportar");return}download(slug(m.name)+".model.json",JSON.stringify(m,null,2),"application/json");$("#modelSaveStatus").textContent="JSON exportado. Copialo a models/"+slug(m.name)+"/model.json en tu repositorio."}
+function importModel(file){const r=new FileReader();r.onload=()=>{try{const m=JSON.parse(r.result);if(m.schema!=="doculab.model/v1"||!Array.isArray(m.components))throw Error("Formato de modelo no reconocido");fill(m);toast("Modelo importado al editor")}catch(e){toast("No se pudo importar: "+e.message)}};r.readAsText(file)}
+function init(){
+ if(!$("#componentList"))return;
+ fill(null);
+ $("#componentList").addEventListener("click",e=>{const row=e.target.closest("[data-index]");if(!row)return;const i=Number(row.dataset.index),delta=Number(e.target.dataset.move);if(!Number.isNaN(delta)&&delta){const j=i+delta;if(j>=0&&j<components.length)[components[i],components[j]]=[components[j],components[i]];renderComponents()}});
+ $("#componentList").addEventListener("change",e=>{const row=e.target.closest("[data-index]");if(!row||!e.target.matches("[data-toggle]"))return;components[Number(row.dataset.index)].enabled=e.target.checked;renderComponents()});
+ ["modelName","modelCategory","modelDescription"].forEach(id=>$("#"+id).addEventListener("input",renderPreview));
+ $("#addComponent").onclick=()=>{const id=$("#addComponentSelect").value,c=CATALOG.find(x=>x.id===id);if(!c)return;components.push({...c,enabled:true});renderComponents()};
+ $("#saveModel").onclick=saveModel;$("#exportModelJson").onclick=exportModel;
+ $("#importModelJson").onchange=e=>{const f=e.target.files?.[0];if(f)importModel(f);e.target.value=""};
+ $("#clearModelForm").onclick=()=>{if(components.length&&$("#modelName").value&&!confirm("¿Empezar un modelo nuevo? Los cambios no guardados se perderán."))return;fill(null)};
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+})();
