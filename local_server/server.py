@@ -100,6 +100,58 @@ async def save_local_settings(req: LocalSettingsRequest):
         "storage": "local_server/.env"
     }
 
+@app.get("/api/models")
+async def list_models(provider: str):
+    """Devuelve solo los identificadores de modelos accesibles; nunca credenciales."""
+    timeout = httpx.Timeout(25.0, connect=8.0)
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        try:
+            if provider == "ollama":
+                base = os.getenv("OLLAMA_URL", "http://localhost:11434/api/chat").rsplit("/", 1)[0]
+                response = await client.get(base + "/tags")
+                response.raise_for_status()
+                items = response.json().get("models", [])
+                return {"provider": provider, "models": [
+                    {"id": item.get("name", ""), "name": item.get("name", "")}
+                    for item in items if item.get("name")
+                ]}
+            if provider == "openai":
+                key = configured_key("openai")
+                if not key:
+                    raise HTTPException(400, "Guardá primero tu clave API de OpenAI.")
+                base = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
+                response = await client.get(base + "/models", headers={"Authorization": f"Bearer {key}"})
+                response.raise_for_status()
+                items = response.json().get("data", [])
+                return {"provider": provider, "models": [
+                    {"id": item.get("id", ""), "name": item.get("id", "")}
+                    for item in items if item.get("id")
+                ]}
+            if provider == "gemini":
+                key = configured_key("gemini")
+                if not key:
+                    raise HTTPException(400, "Guardá primero tu clave API de Gemini.")
+                response = await client.get(
+                    "https://generativelanguage.googleapis.com/v1beta/models",
+                    params={"key": key, "pageSize": 1000}
+                )
+                response.raise_for_status()
+                items = response.json().get("models", [])
+                return {"provider": provider, "models": [
+                    {"id": item.get("name", "").removeprefix("models/"),
+                     "name": item.get("displayName") or item.get("name", ""),
+                     "description": item.get("description", "")}
+                    for item in items
+                    if item.get("name") and "generateContent" in item.get("supportedGenerationMethods", [])
+                ]}
+            raise HTTPException(400, "Proveedor no reconocido.")
+        except HTTPException:
+            raise
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(exc.response.status_code, exc.response.text[:1000])
+        except httpx.RequestError as exc:
+            raise HTTPException(502, f"No se pudo obtener la lista de modelos: {exc}")
+
 @app.post("/api/generate")
 async def generate(req: GenerateRequest):
     if not req.prompt.strip():
