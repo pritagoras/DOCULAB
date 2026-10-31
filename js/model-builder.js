@@ -71,5 +71,5 @@ function init(){
  $("#importModelJson").onchange=e=>{const f=e.target.files?.[0];if(f)importModel(f);e.target.value=""};
  $("#clearModelForm").onclick=()=>{if(components.length&&$("#modelName").value&&!confirm("¿Empezar un modelo nuevo? Los cambios no guardados se perderán."))return;fill(null)};
 }
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{init();loadRepositoryModels()});else{init();loadRepositoryModels()}
+window.addEventListener("doculab:edit-template",e=>fill(e.detail));if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>{init();loadRepositoryModels()});else{init();loadRepositoryModels()}
 })();
