@@ -140,7 +140,9 @@ async def list_models(provider: str):
                 return {"provider": provider, "models": [
                     {"id": item.get("name", "").removeprefix("models/"),
                      "name": item.get("displayName") or item.get("name", ""),
-                     "description": item.get("description", "")}
+                     "description": item.get("description", ""),
+                     "inputTokenLimit": item.get("inputTokenLimit"),
+                     "outputTokenLimit": item.get("outputTokenLimit")}
                     for item in items
                     if item.get("name") and "generateContent" in item.get("supportedGenerationMethods", [])
                 ]}
