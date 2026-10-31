@@ -76,6 +76,13 @@
               <div class="panel-title"><span class="step">03</span><div><h2>Previsualización</h2><p>Se actualiza al cambiar componentes u orden.</p></div></div>
               <div class="preview-meta"><span id="previewModelName">Nuevo modelo</span><span id="previewComponentCount">0 secciones</span></div>
               <article id="modelPreview" class="document-preview"></article>
+              <div class="reference-pdf-panel">
+                <div class="reference-pdf-heading"><div><b>PDF de referencia</b><small>Guardá páginas del original para compararlas con el modelo.</small></div><span id="referencePdfCount">Sin páginas</span></div>
+                <label class="pdf-dropzone reference-pdf-drop" for="referencePdfFile"><span>＋</span><b>Cargar PDF de ejemplo</b><small>Se guardarán hasta 3 páginas como imágenes dentro del modelo.</small><input type="file" id="referencePdfFile" accept="application/pdf,.pdf"></label>
+                <div class="reference-page-controls"><label class="field-label" for="referencePdfPages">Páginas a mostrar</label><input id="referencePdfPages" value="1,2,3" placeholder="Ej. 1, 2, 5"><button class="button secondary small" id="renderReferencePdf" type="button">Agregar páginas a la preview</button><button class="button ghost small" id="clearReferencePdf" type="button">Quitar referencia</button></div>
+                <small id="referencePdfStatus" class="muted" aria-live="polite">Las páginas seleccionadas se incorporan al JSON del modelo y pueden guardarse en el repositorio.</small>
+                <div id="referencePdfPreview" class="reference-pdf-pages"></div>
+              </div>
             </div>
             <div class="panel model-storage-panel"><h2>Persistencia del modelo</h2><p><b>Local:</b> disponible en este navegador. <b>JSON:</b> portable y versionable. <b>Git:</b> copiá el archivo exportado a <code>models/</code> y confirmá el cambio desde GitHub Desktop.</p><p class="muted">El modelo guardado incluye su estructura, componentes activos e instrucciones. No necesita IA para abrirse ni para generar su documento base.</p></div>
           </div>
@@ -118,6 +125,7 @@
     </main>
   </div>
   <div class="toast" id="toast" role="status"></div><div class="modal-backdrop hidden" id="modelModal"><div class="modal panel" role="dialog" aria-modal="true" aria-label="Vista previa del modelo"><button class="modal-close" id="closeModal" aria-label="Cerrar">×</button><div id="modalContent"></div></div></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="app.js"></script>
   <script src="js/model-builder.js"></script><script src="js/document-editor.js"></script>
 </body>
