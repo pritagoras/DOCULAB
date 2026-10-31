@@ -1,7 +1,7 @@
 // DOCULAB service worker.
 // Estrategia: red primero para los archivos propios (así los cambios publicados
 // llegan sin tener que borrar la caché) y caché como respaldo sin conexión.
-const CACHE = "doculab-v7";
+const CACHE = "doculab-v8";
 const FILES = [
   "./",
   "./index.html",
