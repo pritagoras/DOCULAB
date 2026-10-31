@@ -16,6 +16,8 @@ if not exist "local_server\.venv\Scripts\python.exe" (
   local_server\.venv\Scripts\python.exe -m pip install -r local_server\requirements.txt
   if errorlevel 1 goto error
 )
+local_server\.venv\Scripts\python.exe -m pip install -r local_server\requirements.txt
+if errorlevel 1 goto error
 echo Iniciando servidor de IA local...
 start "DOCULAB - IA local" cmd /k "cd /d ""%~dp0local_server"" && .\.venv\Scripts\python.exe -m uvicorn server:app --host 127.0.0.1 --port 8000"
 echo Iniciando aplicacion web...
