@@ -65,7 +65,7 @@ async function designWithAI(){
  const prompt=`Diseñá una plantilla documental modular para DOCULAB. Devolvé SOLO JSON válido, sin Markdown ni explicaciones, con esta estructura: {"schema":"doculab.model/v1","id":"model-id","name":"nombre","category":"categoría","description":"descripción","instructions":"reglas","components":[{"id":"id-simple","title":"título","description":"descripción","instruction":"instrucción","enabled":true,"order":0}],"version":1}. Cada componente debe ser una sección independiente que pueda activarse o desactivarse. Usá IDs simples en kebab-case, no inventes componentes redundantes y proponé entre 4 y 10 componentes. Modelo: ${name}. Categoría: ${category}. Descripción: ${description}. Reglas indicadas: ${rules}.`;
  const button=$("#designModelWithAI");button.disabled=true;button.textContent="Diseñando…";
  try{
-  const endpoint=$("#aiEndpoint").value.replace(/\\/$/,"");
+  const endpoint=$("#aiEndpoint").value.replace(/\/+$/,"");
   const response=await fetch(endpoint+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({provider,model:$("#aiModel").value,prompt,api_key:$("#aiKey").value})});
   if(!response.ok)throw Error("HTTP "+response.status);
   const data=await response.json();let raw=String(data.text||"").trim().replace(/^```(?:json)?\s*/i,"").replace(/\s*```$/,"");
