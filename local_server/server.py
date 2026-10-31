@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-app = FastAPI(title="DOCULAB Local AI Bridge", version="0.4.0")
+app = FastAPI(title="DOCULAB Local AI Bridge", version="0.5.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:8080", "http://127.0.0.1:8080", "http://localhost:8000", "http://127.0.0.1:8000"],
@@ -118,8 +118,9 @@ async def list_models(provider: str):
     async with httpx.AsyncClient(timeout=timeout) as client:
         try:
             if provider == "ollama":
-                base = os.getenv("OLLAMA_URL", "http://localhost:11434/api/chat").rsplit("/", 1)[0]
-                response = await client.get(base + "/tags")
+                ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434/api/chat")
+                base = ollama_url.split("/api/", 1)[0].rstrip("/")
+                response = await client.get(base + "/api/tags")
                 response.raise_for_status()
                 items = response.json().get("models", [])
                 return {"provider": provider, "models": [
