@@ -62,8 +62,8 @@
             <div class="component-add"><select id="addComponentSelect"><option value="">Agregar componente…</option></select><button class="button secondary small" id="addComponent">＋ Agregar</button></div>
             <label class="field-label">Instrucciones generales para la IA</label><textarea id="modelPrompt" rows="4" placeholder="Reglas globales, precisión, fuentes y tono..."></textarea>
             <div class="button-row"><button class="button secondary" id="clearModelForm">Nuevo / Limpiar</button><button class="button primary" id="saveModel">Guardar modelo</button></div>
-            <div class="button-row model-publish-row"><button class="button secondary" id="exportModelJson">Exportar JSON</button><button class="button secondary" id="publishModel">Publicar en GitHub</button></div>
-            <small id="modelSaveStatus" class="muted">Los cambios se guardan en este navegador hasta publicarlos.</small>
+            <div class="button-row model-publish-row"><button class="button secondary" id="exportModelJson">Descargar modelo JSON</button><label class="button secondary file-button">Importar modelo JSON<input type="file" id="importModelJson" accept="application/json,.json"></label></div>
+            <small id="modelSaveStatus" class="muted">Guardá el JSON y copialo a models/ en tu repositorio con GitHub Desktop.</small>
           </div>
           <div class="model-preview-column">
             <div class="panel live-preview-panel">
@@ -71,7 +71,7 @@
               <div class="preview-meta"><span id="previewModelName">Nuevo modelo</span><span id="previewComponentCount">0 secciones</span></div>
               <article id="modelPreview" class="document-preview"></article>
             </div>
-            <div class="panel model-storage-panel"><h2>Persistencia del modelo</h2><p><b>Local:</b> disponible en este navegador. <b>JSON:</b> portable y versionable. <b>GitHub:</b> queda guardado en el repositorio y puede cargarse sin IA.</p><p class="muted">La publicación requiere ejecutar el puente local y configurar un token de GitHub en el entorno del servidor.</p></div>
+            <div class="panel model-storage-panel"><h2>Persistencia del modelo</h2><p><b>Local:</b> disponible en este navegador. <b>JSON:</b> portable y versionable. <b>Git:</b> copiá el archivo exportado a <code>models/</code> y confirmá el cambio desde GitHub Desktop.</p><p class="muted">El modelo guardado incluye su estructura, componentes activos e instrucciones. No necesita IA para abrirse ni para generar su documento base.</p></div>
           </div>
         </div>
       </section><section class="view" id="view-projects"><div class="page-heading"><div><div class="eyebrow">ARCHIVO PERSONAL</div><h1>Mis proyectos</h1><p>Documentos guardados para continuar, revisar o exportar.</p></div></div><div class="project-list" id="projectList"></div><div class="empty-state hidden" id="emptyProjects"><b>Todavía no hay proyectos</b><p>Los documentos que guardes desde el estudio aparecerán acá.</p><button class="button primary" data-go="studio">Crear primer documento</button></div></section>
