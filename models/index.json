@@ -1,5 +1,11 @@
 {
   "schema": "doculab.models-index/v1",
   "updated": "2026-10-31T00:00:00Z",
-  "models": []
+  "models": [
+    {
+      "id": "guide-academic-modular",
+      "name": "Guía académica modular",
+      "path": "models/guia-academica-modular/model.json"
+    }
+  ]
 }
