@@ -39,6 +39,17 @@ def configured_key(provider, request_key=""):
     # Environment variables take precedence; otherwise use the private local .env file.
     return os.getenv(name) or read_local_secrets().get(name, "") or request_key
 
+def rate_limit_snapshot(headers):
+    names = {
+        "requests_limit": "x-ratelimit-limit-requests",
+        "requests_remaining": "x-ratelimit-remaining-requests",
+        "requests_reset": "x-ratelimit-reset-requests",
+        "tokens_limit": "x-ratelimit-limit-tokens",
+        "tokens_remaining": "x-ratelimit-remaining-tokens",
+        "tokens_reset": "x-ratelimit-reset-tokens",
+    }
+    return {key: headers.get(header) for key, header in names.items() if headers.get(header) is not None}
+
 def load_product_context():
     try:
         return CONTEXT_FILE.read_text(encoding="utf-8").strip()
@@ -190,7 +201,7 @@ async def generate(req: GenerateRequest):
                     ]}
                 )
                 response.raise_for_status()
-                return {"text": response.json()["choices"][0]["message"]["content"], "model": model, "provider": "openai", "context_loaded": True}
+                return {"text": response.json()["choices"][0]["message"]["content"], "model": model, "provider": "openai", "context_loaded": True, "rate_limits": rate_limit_snapshot(response.headers)}
 
             if req.provider == "gemini":
                 key = configured_key("gemini", req.api_key)
@@ -208,7 +219,7 @@ async def generate(req: GenerateRequest):
                 response.raise_for_status()
                 data = response.json()
                 answer = "".join(part.get("text", "") for part in data.get("candidates", [{}])[0].get("content", {}).get("parts", []))
-                return {"text": answer, "model": model, "provider": "gemini", "context_loaded": True}
+                return {"text": answer, "model": model, "provider": "gemini", "context_loaded": True, "usage": data.get("usageMetadata", {})}
 
             raise HTTPException(400, "Proveedor no reconocido")
         except httpx.HTTPStatusError as exc:
