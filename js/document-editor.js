@@ -40,6 +40,7 @@ async function generateSection(index,button){
 function init(){
  if(!$("#buildStructuredDoc"))return;
  $("#buildStructuredDoc").addEventListener("click",build);
+ $("#aiProvider").addEventListener("change",()=>{const p=$("#aiProvider").value,defaults={ollama:"qwen2.5:7b",openai:"gpt-4o-mini",gemini:"gemini-2.5-flash"};const hints={ollama:"Nombre exacto del modelo descargado en Ollama.",openai:"ID del modelo habilitado en tu cuenta de OpenAI.",gemini:"ID del modelo disponible en Google AI Studio.",none:"Sin IA: podés editar y exportar documentos manualmente."};if(defaults[p]&&!$("#aiModel").value)$("#aiModel").value=defaults[p];$("#modelHint").textContent=hints[p]||"Escribí el identificador exacto del modelo.";});
  $("#sectionEditors").addEventListener("input",e=>{if(e.target.matches("[data-content]")){sections[Number(e.target.dataset.content)].content=e.target.value;syncOutput()}});
  $("#sectionEditors").addEventListener("click",e=>{const b=e.target.closest("[data-generate]");if(b)generateSection(Number(b.dataset.generate),b)});
  $("#studioModel").addEventListener("change",()=>$("#structuredEditor").classList.add("hidden"));
