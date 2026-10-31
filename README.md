@@ -7,7 +7,7 @@
 DOCULAB separa el diseño asistido por IA del uso cotidiano de los modelos:
 
 - La IA puede proponer, revisar o ampliar una plantilla desde el constructor.
-- La plantilla se guarda como JSON y define sus componentes, orden, instrucciones y estado activo.
+- La plantilla se guarda como JSON y define sus componentes, orden, instrucciones, estado activo y, opcionalmente, textos de muestra por sección para personalizar su preview A4 y PDF de demostración.
 - Una plantilla guardada se puede abrir, previsualizar y utilizar sin conectarse a ningún modelo de lenguaje; DOCULAB puede generar su estructura vacía para completarla manualmente.
 - Los modelos versionados en Git se cargan desde `models/index.json`.
 
@@ -27,7 +27,7 @@ models/
 Para incorporar un modelo nuevo:
 
 1. En DOCULAB, abrir **Constructor de modelos**.
-2. Crear o editar los componentes y revisar la previsualización.
+2. Crear o editar los componentes, completar el campo «Contenido de muestra para el PDF» de cada sección y revisar la previsualización A4.
 3. Pulsar **Guardar modelo** para conservarlo en el navegador.
 4. Pulsar **Descargar modelo JSON**. Crear una carpeta dentro de `models/` y guardar el archivo como `model.json`.
 5. Pulsar **Descargar índice Git** y reemplazar `models/index.json` con ese archivo.
