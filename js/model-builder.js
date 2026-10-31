@@ -101,7 +101,7 @@ async function designModelFromPDF(){
   const match=raw.match(/\{[\s\S]*\}/);if(match)raw=match[0];
   const model=JSON.parse(raw);if(!Array.isArray(model.components)||!model.components.length)throw Error("La IA no devolvió componentes válidos");
   model.schema="doculab.model/v1";model.id=editingId||model.id||"model_"+slug(name);model.name=model.name||name;model.category=model.category||category;model.description=model.description||"Modelo reconstruido a partir de "+file.name;model.instructions=model.instructions||rules;model.components=model.components.map((c,i)=>({...c,id:slug(c.id||c.title||("seccion-"+(i+1))),title:String(c.title||("Sección "+(i+1))),description:String(c.description||""),instruction:String(c.instruction||""),preview:String(c.preview||""),enabled:c.enabled!==false,order:i}));
-  fill(model);status.textContent="Modelo generado desde "+file.name+". Revisá y ajustá los componentes antes de guardarlo.";toast("Modelo reconstruido desde el PDF");renderObservedUsage?.(result);
+  fill(model);status.textContent="Modelo generado desde "+file.name+". Revisá y ajustá los componentes antes de guardarlo.";toast("Modelo reconstruido desde el PDF");
  }catch(e){status.textContent="No se pudo crear el modelo: "+e.message;toast("Error al analizar el PDF")}
  finally{button.disabled=false;button.textContent="Analizar PDF y crear modelo"}
 }
