@@ -1,5 +1,7 @@
 import os
-from pathlib import Path\nfrom io import BytesIO\nfrom urllib.parse import unquote
+from pathlib import Path
+from io import BytesIO
+from urllib.parse import unquote
 import httpx
 from fastapi import FastAPI, HTTPException, Request\nfrom pypdf import PdfReader
 from fastapi.middleware.cors import CORSMiddleware
