@@ -76,7 +76,7 @@
             <div id="documentOutputWorkspace" class="document-output-workspace hidden">
               <div class="document-text-editor">
                 <div class="document-editor-heading"><div><b>Contenido editable</b><small>Pegá aquí la respuesta generada con tu prompt. Después podés distribuirla en las secciones de la maqueta.</small></div><span>EDITOR</span></div>
-                <textarea id="documentOutput" placeholder="Pegá aquí el contenido completo que querés convertir en el documento A4..."></textarea>
+                <textarea id="documentOutput" placeholder="Pegá aquí la respuesta completa de la IA. Si usaste una maqueta, conservá sus encabezados para distribuir el contenido automáticamente."></textarea>
               </div>
               <div class="studio-document-preview-wrap">
                 <div class="studio-preview-meta"><div><b>Previsualización del PDF</b><small id="studioPreviewMeta">Formato A4 · Esperando contenido</small></div><span class="a4-mini-badge">A4</span></div>
@@ -84,7 +84,7 @@
               </div>
             </div>
             <div class="preview-footer"><span id="studioStatus">Listo para comenzar.</span><div><button class="button ghost small" id="copyPrompt" type="button">Copiar prompt</button><button class="button primary small" id="saveProject" type="button">Guardar proyecto</button></div></div>
-            <div class="export-row"><button class="button secondary" id="exportHtml" type="button">Exportar HTML</button><button class="button secondary" id="printPdf" type="button">Imprimir / Guardar PDF</button><button class="button primary" id="buildStructuredDoc" type="button">Editor por secciones</button></div>
+            <div class="export-row"><button class="button secondary" id="exportHtml" type="button">Exportar HTML</button><button class="button secondary" id="printPdf" type="button">Imprimir / Guardar PDF</button><button class="button primary" id="buildStructuredDoc" type="button">Distribuir en maqueta</button></div>
             <div id="structuredEditor" class="structured-editor hidden">
               <div class="structured-toolbar"><div><h3>Contenido por secciones</h3><p>Completá cada apartado de la maqueta. La vista A4 se actualiza con tus cambios.</p></div><div class="button-row"><button class="button secondary small" id="structuredExport" type="button">Exportar HTML</button><button class="button primary small" id="structuredPrint" type="button">Imprimir / PDF</button></div></div>
               <div class="structured-layout"><div id="sectionEditors" class="section-editors"></div><div class="document-live-preview-wrap"><div class="preview-meta"><b>Vista de página</b><span>Actualización automática</span></div><div id="documentLivePreview" class="document-live-preview"></div></div></div>
