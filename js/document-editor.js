@@ -78,14 +78,41 @@ function structuredBlocks(){
  });
  return blocks;
 }
+function normalizeSectionHeading(value){
+ return String(value||"").replace(/^#{1,3}\s*/,"").replace(/^\d+[.)]\s*/,"").replace(/[：:]$/,"").trim().toLocaleLowerCase();
+}
+function importExistingDocument(raw,components){
+ const text=String(raw||"").trim();if(!text)return {matched:0,usedFallback:false};
+ const lines=text.replace(/\r/g,"").split("\n");
+ const normalized=components.map((c,index)=>({index,title:normalizeSectionHeading(c.title)}));
+ const marks=[];
+ lines.forEach((line,index)=>{
+  const name=normalizeSectionHeading(line);
+  if(!name)return;
+  const match=normalized.find(c=>c.title===name);
+  if(match)marks.push({line:index,index:match.index});
+ });
+ if(!marks.length){
+  const first=text.split("\n")[0]?.trim();
+  const body=first&&first.toLocaleLowerCase()===(title||"").toLocaleLowerCase()?lines.slice(1).join("\n").trim():text;
+  if(body&&sections.length)sections[0].content=body;
+  return {matched:0,usedFallback:!!body};
+ }
+ marks.forEach((mark,i)=>{
+  const next=marks[i+1],content=lines.slice(mark.line+1,next?next.line:lines.length).join("\n").trim();
+  if(sections[mark.index])sections[mark.index].content=content;
+ });
+ return {matched:marks.length,usedFallback:false};
+}
 function build(){
  const model=activeModel();let comps=(model?.components||[]).filter(c=>c.enabled!==false).sort((a,b)=>(a.order??0)-(b.order??0));
  if(!comps.length&&model?.structure)comps=String(model.structure).split(";").map((name,i)=>({id:"section-"+i,title:name.trim(),instruction:"Desarrollar esta sección con precisión y coherencia.",enabled:true,order:i})).filter(c=>c.title);
  if(!comps.length){notify("Este modelo no tiene componentes configurados.");return}
  title=$("#docTitle").value.trim()||model.name||"Documento sin título";
  sections=comps.map((c,i)=>({id:c.id||"section-"+i,title:c.title||"Sección "+(i+1),instruction:c.instruction||"",content:""}));
+ const imported=importExistingDocument($("#documentOutput").value,comps);
  renderEditor();$("#documentOutputWorkspace").classList.add("hidden");$("#structuredEditor").classList.remove("hidden");
- $("#studioStatus").textContent="Editor por secciones creado con la maqueta «"+(model.name||"DOCULAB")+"». La vista A4 se actualiza al escribir.";
+ $("#studioStatus").textContent=imported.matched?"Contenido distribuido en "+imported.matched+" sección(es). Revisá los campos y la vista A4.":imported.usedFallback?"El texto existente se cargó en la primera sección. Podés redistribuirlo y editarlo.":"Editor por secciones creado con la maqueta «"+(model.name||"DOCULAB")+"». La vista A4 se actualiza al escribir.";
 }
 function renderEditor(){
  const host=$("#sectionEditors");
