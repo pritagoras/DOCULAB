@@ -113,7 +113,7 @@ function saveModelReferencePages(model,pages){
  }catch(error){console.warn("No se pudieron guardar las previews locales",error);return false}
 }
 async function imageFileToReference(file){
- if(!/^image\\/(png|jpeg|webp)$/i.test(file.type))throw new Error("Formato no compatible: "+file.name);
+ if(!["image/png","image/jpeg","image/webp"].includes(String(file.type||"").toLowerCase()))throw new Error("Formato no compatible: "+file.name);
  if(file.size>20*1024*1024)throw new Error("La imagen supera 20 MB: "+file.name);
  const url=URL.createObjectURL(file),img=new Image();
  try{
