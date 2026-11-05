@@ -158,3 +158,21 @@
   .pl-enrichment-toggle-meta{gap:6px}
   .pl-enrichment-toggle-meta>span:first-child{font-size:9px}
 }
+
+
+/* Importación del análisis estructurado: un único campo JSON */
+.pl-context-json-input{
+  display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;
+  min-height:150px;resize:vertical;
+  font:11px/1.55 var(--font-mono);
+  background:var(--surface-2);
+  overflow-wrap:anywhere;
+}
+.pl-enrichment-card{min-width:0;overflow:hidden}
+.pl-enrichment-card .pl-context-import-footer{margin-top:2px}
+.pl-enrichment-card .pl-context-import-footer .button{white-space:nowrap}
+.pl-context-item-info p{max-height:4.4em;overflow:hidden}
+@media(max-width:720px){
+  .pl-enrichment-flow{grid-template-columns:minmax(0,1fr)}
+  .pl-enrichment-card{width:100%;box-sizing:border-box}
+}
