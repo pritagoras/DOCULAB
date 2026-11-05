@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0e1522">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="DOCULAB — biblioteca y estudio de producción documental asistido por IA.">
+  <title>DOCULAB — Document Studio</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <script>try{const t=localStorage.getItem("doculab_theme")|| (matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#" aria-label="DOCULAB inicio">
+        <span class="brand-mark">D</span><span><b>DOCULAB</b><small>DOCUMENT STUDIO</small></span>
+      </a>
+      <button class="nav-item active" data-view="library"><span>▦</span> Biblioteca <kbd>01</kbd></button>
+      <button class="nav-item" data-view="studio"><span>✳</span> Crear documento <kbd>02</kbd></button>
+      <button class="nav-item" data-view="builder"><span>⌘</span> Constructor de modelos <kbd>03</kbd></button>
+      <button class="nav-item" data-view="projects"><span>▤</span> Mis proyectos <kbd>04</kbd></button>
+      <button class="nav-item" data-view="promptlab"><span>✧</span> Diseñador de prompts <kbd>05</kbd></button>
+
+      <div class="sidebar-bottom">
+        <div class="connection-card" aria-live="polite">
+          <span class="status-dot off" id="connectionDot"></span>
+          <div><b id="connectionLabel">Modo navegador</b><small id="connectionSub">Almacenamiento local</small></div>
+        </div>
+        <button class="nav-item" data-view="settings"><span>⚙</span> Configuración</button>
+        <small class="version">DOCULAB · v0.2.0</small>
+      </div>
+    </aside>
+    <main class="main" id="main" tabindex="-1">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Abrir menú">☰</button>
+        <div class="breadcrumbs"><span>Workspace</span><i>/</i><b id="crumb">Biblioteca</b></div>
+        <div class="top-actions"><span class="local-pill"><span class="status-dot"></span> Guardado local</span><button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar tema" title="Cambiar tema"><span id="themeIcon">☾</span><span id="themeLabel">Oscuro</span></button><button class="avatar" title="DOCULAB">D</button></div>
+      </header>
+      <section class="view active" id="view-library">
+        <div class="page-heading"><div><div class="eyebrow">CENTRO DE RECURSOS</div><h1>Biblioteca de modelos</h1><p>Plantillas, instrucciones y estructuras reutilizables para producir documentos.</p></div><button class="button primary" id="newModelTop">＋ Nuevo modelo</button></div>
+        <div class="stats-row"><div class="stat-card"><span>Modelos disponibles</span><b id="statModels">0</b><small>Incluye plantillas iniciales</small></div><div class="stat-card"><span>Mis modelos</span><b id="statCustom">0</b><small>Modelos creados por vos</small></div><div class="stat-card"><span>Proyectos guardados</span><b id="statProjects">0</b><small>Documentos en preparación</small></div></div>
+        <div class="library-toolbar"><label class="searchbox"><span>⌕</span><input id="searchInput" placeholder="Buscar modelos, categorías o palabras clave..."></label><select id="categoryFilter" aria-label="Filtrar por categoría"><option value="all">Todas las categorías</option></select><select id="sortFilter" aria-label="Ordenar"><option value="featured">Destacados</option><option value="az">Nombre A–Z</option><option value="newest">Más recientes</option></select></div>
+        <div class="section-line"><h2>Explorar modelos</h2><span id="resultCount" aria-live="polite">0 modelos</span></div><div class="model-grid" id="modelGrid"></div><div class="empty-state hidden" id="emptyLibrary"><b>No encontramos modelos</b><p>Probá con otra búsqueda o creá tu propia plantilla.</p></div>
+      </section>
+      <section class="view" id="view-studio">
+        <div class="page-heading"><div><div class="eyebrow">PRODUCCIÓN DOCUMENTAL</div><h1>Crear documento</h1><p>Elegí un modelo, agregá tus fuentes y prepará el contenido.</p></div></div>
+        <div class="studio-layout"><div class="panel form-panel"><div class="panel-title"><span class="step">01</span><div><h2>Configuración del documento</h2><p>Definí la estructura y el alcance del trabajo.</p></div></div>
+        <label class="field-label">Modelo de partida</label><select id="studioModel"></select><label class="field-label">Título del documento</label><input id="docTitle" placeholder="Ej. Mecanismos de regulación génica"><label class="field-label">Material de entrada</label><textarea id="sourceText" rows="9" placeholder="Pegá aquí apuntes, transcripciones, fragmentos de bibliografía o el contenido que querés organizar..."></textarea><div class="file-note">En esta versión podés pegar texto directamente. La importación y extracción de archivos se ampliará en la siguiente iteración.</div>
+        <div class="two-fields"><div><label class="field-label">Profundidad</label><select id="depth"><option>Sintética</option><option selected>Intermedia</option><option>Profunda</option><option>Exhaustiva</option></select></div><div><label class="field-label">Estilo editorial</label><select id="docStyle"><option>Académico minimalista</option><option>Manual editorial</option><option>Esquemático</option><option>Visual didáctico</option></select></div></div>
+        <label class="field-label">Indicaciones adicionales</label><textarea id="extraInstructions" rows="3" placeholder="Restricciones, prioridades, fuentes permitidas, tono..."></textarea><div class="button-row"><button class="button secondary" id="buildPrompt">Preparar prompt</button><button class="button primary" id="generateDoc">Generar borrador</button></div></div>
+        <div class="panel preview-panel"><div class="panel-title"><span class="step">02</span><div><h2>Área de trabajo</h2><p>Revisá el prompt o editá el documento resultante.</p></div></div><div class="tabbar"><button class="tab active" data-tab="prompt">Prompt ensamblado</button><button class="tab" data-tab="document">Documento</button></div><textarea id="promptOutput" class="editor-area" spellcheck="false" placeholder="El prompt ensamblado aparecerá aquí..."></textarea><textarea id="documentOutput" class="editor-area hidden" placeholder="El borrador aparecerá aquí. Podés editarlo antes de exportar."></textarea><div class="preview-footer"><span id="studioStatus">Listo para comenzar.</span><div><button class="button ghost small" id="copyPrompt">Copiar prompt</button><button class="button primary small" id="saveProject">Guardar proyecto</button></div></div><div class="export-row"><button class="button secondary" id="exportHtml">Exportar HTML</button><button class="button secondary" id="printPdf">Imprimir / Guardar PDF</button><button class="button primary" id="buildStructuredDoc">Editor por secciones</button></div><div id="structuredEditor" class="structured-editor hidden"><div class="structured-toolbar"><div><h3>Contenido del documento</h3><p>Editá cada sección por separado. Los cambios no modifican la plantilla.</p></div><div class="button-row"><button class="button secondary small" id="structuredExport">Exportar HTML</button><button class="button primary small" id="structuredPrint">Imprimir / PDF</button></div></div><div class="structured-layout"><div id="sectionEditors" class="section-editors"></div><div class="document-live-preview-wrap"><div class="preview-meta"><b>Vista de página</b><span>Actualización automática</span></div><div id="documentLivePreview" class="document-live-preview"></div></div></div></div></div></div>
+      </section>
+      <section class="view" id="view-builder">
+        <div class="page-heading"><div><div class="eyebrow">DISEÑO MODULAR</div><h1>Constructor de modelos</h1><p>Diseñá una plantilla por componentes. La IA es opcional: el modelo guardado funciona por sí mismo.</p></div></div>
+        <div class="model-workbench">
+          <div class="panel model-config">
+            <div class="panel-title"><span class="step">01</span><div><h2>Identidad del modelo</h2><p>Definí cómo se identifica en la biblioteca.</p></div></div>
+            <label class="field-label">Nombre del modelo</label><input id="modelName" placeholder="Ej. Guía universitaria modular">
+            <label class="field-label">Categoría</label><input id="modelCategory" list="categories" placeholder="Académicos, científicos..."><datalist id="categories"><option>Académicos</option><option>Científicos</option><option>Visuales</option><option>Evaluación</option><option>Documentación</option><option>Personalizados</option></datalist>
+            <label class="field-label">Descripción</label><textarea id="modelDescription" rows="2" placeholder="¿Para qué sirve este modelo?"></textarea>
+            <div class="panel-title module-heading"><span class="step">02</span><div><h2>Componentes</h2><p>Activá, desactivá y ordená las secciones del documento.</p></div></div>
+            <div id="componentList" class="component-list"></div>
+            <div class="component-add"><select id="addComponentSelect"><option value="">Agregar componente…</option></select><button class="button secondary small" id="addComponent">＋ Agregar</button></div>
+            <label class="field-label">Instrucciones generales para la IA</label><textarea id="modelPrompt" rows="4" placeholder="Reglas globales, precisión, fuentes y tono..."></textarea><div class="pdf-model-import external-json-workflow"><div class="pdf-import-heading"><span class="pdf-import-icon">IA →</span><div><b>Crear modelo usando una IA externa</b><p>Adjuntá el PDF en ChatGPT, Gemini, Claude u otra IA. El prompt extrae únicamente su diseño editorial: tamaño, márgenes, tipografías, jerarquías, espaciado y composición. Después pegá aquí el JSON.</p></div></div><div class="button-row"><button class="button secondary" id="copyExternalPdfPrompt" type="button">Copiar prompt para analizar el PDF</button><button class="button secondary" id="showExternalPdfPrompt" type="button">Ver prompt</button></div><div id="externalPdfPromptBox" hidden><textarea id="externalPdfPromptText" rows="12" readonly></textarea><small id="externalPdfPromptStatus" class="muted">Este prompt define el formato JSON que DOCULAB puede importar.</small></div><label class="field-label" for="pastedModelJson">Pegar JSON generado por la IA</label><textarea id="pastedModelJson" rows="9" placeholder='Pegá aquí el JSON completo que te devolvió la IA…'></textarea><div class="button-row"><button class="button primary" id="importPastedModel" type="button">Convertir JSON en modelo editable</button></div><small id="pastedModelStatus" class="muted" aria-live="polite">DOCULAB validará la estructura y cargará los componentes en el constructor. Después podés revisarlos y guardarlos.</small></div><div class="pdf-model-import"><div class="pdf-import-heading"><span class="pdf-import-icon">PDF</span><div><b>Reconstruir un modelo desde un PDF</b><p>Subí un documento de referencia y la IA identificará su índice, jerarquías, secciones y patrones para convertirlos en componentes editables.</p></div></div><label class="field-label">Documento de referencia</label><label class="pdf-dropzone" for="modelPdfFile"><span>＋</span><b>Seleccionar PDF</b><small>PDF con texto seleccionable · máximo 20 MB</small><input type="file" id="modelPdfFile" accept="application/pdf,.pdf"></label><div class="button-row"><button class="button primary" id="analyzePdfModel" type="button">Analizar PDF y crear modelo</button></div><small id="pdfModelStatus" class="muted" aria-live="polite">La extracción de texto sirve solo para detectar roles tipográficos; para analizar con precisión colores, márgenes y composición, usá el flujo de IA externa adjuntando el PDF original.</small><details class="pdf-extract-details"><summary>Ver texto extraído</summary><pre id="pdfExtractPreview">El texto del PDF aparecerá aquí después de extraerlo.</pre></details></div><div class="button-row"><button class="button secondary" id="designModelWithAI">Proponer estructura con IA</button></div>
+            <div class="button-row"><button class="button secondary" id="clearModelForm">Nuevo / Limpiar</button><button class="button primary" id="saveModel">Guardar modelo</button></div>
+            <div class="button-row model-publish-row"><button class="button secondary" id="exportModelJson">Descargar modelo JSON</button><button class="button secondary" id="exportModelIndex">Descargar índice Git</button><label class="button secondary file-button">Importar modelo JSON<input type="file" id="importModelJson" accept="application/json,.json"></label></div>
+            <small id="modelSaveStatus" class="muted">Guardá el JSON y copialo a models/ en tu repositorio con GitHub Desktop.</small>
+          </div>
+          <div class="model-preview-column">
+            <div class="panel live-preview-panel">
+              <div class="panel-title"><span class="step">03</span><div><h2>Previsualización</h2><p>Se actualiza al cambiar componentes u orden.</p></div></div>
+              <div class="preview-meta"><span id="previewModelName">Nuevo modelo</span><span id="previewComponentCount">0 secciones</span></div>
+              <article id="modelPreview" class="document-preview"></article>
+              <div class="reference-pdf-panel">
+                <div class="reference-pdf-heading"><div><b>PDF de referencia</b><small>Guardá páginas del original para compararlas con el modelo.</small></div><span id="referencePdfCount">Sin páginas</span></div>
+                <label class="pdf-dropzone reference-pdf-drop" for="referencePdfFile"><span>＋</span><b>Cargar PDF de ejemplo</b><small>Se guardarán hasta 3 páginas como imágenes dentro del modelo.</small><input type="file" id="referencePdfFile" accept="application/pdf,.pdf"></label>
+                <div class="reference-page-controls"><label class="field-label" for="referencePdfPages">Páginas a mostrar</label><input id="referencePdfPages" value="1,2,3" placeholder="Ej. 1, 2, 5"><button class="button secondary small" id="renderReferencePdf" type="button">Agregar páginas a la preview</button><button class="button ghost small" id="clearReferencePdf" type="button">Quitar referencia</button></div>
+                <small id="referencePdfStatus" class="muted" aria-live="polite">Las páginas seleccionadas se incorporan al JSON del modelo y pueden guardarse en el repositorio.</small>
+                <div id="referencePdfPreview" class="reference-pdf-pages"></div>
+              </div>
+            </div>
+            <div class="panel model-storage-panel"><h2>Persistencia del modelo</h2><p><b>Local:</b> disponible en este navegador. <b>JSON:</b> portable y versionable. <b>Git:</b> copiá el archivo exportado a <code>models/</code> y confirmá el cambio desde GitHub Desktop.</p><p class="muted">El modelo guardado incluye su estructura, componentes activos e instrucciones. No necesita IA para abrirse ni para generar su documento base.</p></div>
+          </div>
+        </div>
+      </section><section class="view" id="view-promptlab">
+        <div class="page-heading"><div><div class="eyebrow">INGENIERÍA DE PROMPTS</div><h1>Diseñador de prompts</h1><p>Primero definí qué necesitás. DOCULAB puede crear el prompt que le pedirás a otra IA que diseñe el prompt definitivo.</p></div></div>
+        <div class="promptlab-layout">
+          <div class="panel promptlab-form"><div class="panel-title"><span class="step">01</span><div><h2>Brief del trabajo</h2><p>Describí el resultado final, no redactes todavía las instrucciones técnicas.</p></div></div>
+            <label class="field-label" for="promptGoal">¿Qué querés conseguir?</label><textarea id="promptGoal" rows="3" placeholder="Ej. Quiero un resumen universitario completo de una clase, útil para estudiar para un parcial."></textarea>
+            <label class="field-label" for="promptSources">¿Qué materiales recibirá la IA que haga el trabajo?</label><textarea id="promptSources" rows="3" placeholder="Ej. Una transcripción de la clase y un PDF con las diapositivas del profesor. La transcripción refleja lo explicado oralmente y el PDF contiene el apoyo visual."></textarea>
+            <label class="field-label" for="promptOutputSpec">¿Cómo debería ser el resultado?</label><textarea id="promptOutputSpec" rows="3" placeholder="Ej. Un resumen desarrollado, ordenado por temas, con definiciones, relaciones y ejemplos relevantes."></textarea>
+            <div class="two-fields"><div><label class="field-label" for="promptDepth">Profundidad</label><select id="promptDepth"><option>Intermedia</option><option>Detallada</option><option>Exhaustiva</option><option>Sintética</option></select></div><div><label class="field-label" for="promptTone">Estilo</label><select id="promptTone"><option>Académico claro</option><option>Manual universitario</option><option>Esquemático</option><option>Explicativo y didáctico</option></select></div></div>
+            <label class="field-label" for="promptRules">Reglas y prioridades</label><textarea id="promptRules" rows="4" placeholder="Ej. Priorizar lo explicado por el profesor; usar las diapositivas para completar y ordenar; no inventar información; señalar contradicciones o vacíos; eliminar repeticiones sin perder contenido importante."></textarea>
+            <div class="button-row"><button class="button primary" id="designPrompt">Diseñar el prompt</button><button class="button secondary" id="clearPromptLab">Limpiar</button></div>
+            <small class="muted" id="promptLabStatus" aria-live="polite">Con un proveedor conectado, DOCULAB generará el prompt definitivo. En modo manual, preparará el metaprompt para usarlo en ChatGPT, Gemini u otra IA.</small>
+          </div>
+          <div class="panel promptlab-result"><div class="panel-title"><span class="step">02</span><div><h2>Resultado</h2><p>El texto generado será un prompt reutilizable; todavía no es el resumen.</p></div></div>
+            <div class="prompt-stage"><span class="tag">ETAPA 1</span><div><b>Brief</b><small>Tu objetivo y las características del material.</small></div><span class="prompt-arrow">→</span><span class="tag">ETAPA 2</span><div><b>Prompt definitivo</b><small>Instrucciones que se usarán con la transcripción y el PDF.</small></div></div>
+            <label class="field-label" for="promptLabOutput">Prompt generado</label><textarea id="promptLabOutput" class="promptlab-output" rows="24" spellcheck="false" placeholder="El prompt aparecerá aquí. En modo manual se generará un metaprompt que le pedirá a otra IA que redacte el prompt definitivo."></textarea>
+            <div class="button-row"><button class="button secondary" id="copyPromptLab">Copiar resultado</button><button class="button primary" id="usePromptInStudio">Enviar al estudio</button></div>
+          </div>
+        </div>
+      </section>
+      <section class="view" id="view-projects"><div class="page-heading"><div><div class="eyebrow">ARCHIVO PERSONAL</div><h1>Mis proyectos</h1><p>Documentos guardados para continuar, revisar o exportar.</p></div></div><div class="project-list" id="projectList"></div><div class="empty-state hidden" id="emptyProjects"><b>Todavía no hay proyectos</b><p>Los documentos que guardes desde el estudio aparecerán acá.</p><button class="button primary" data-go="studio">Crear primer documento</button></div></section>
+      <section class="view" id="view-settings"><div class="page-heading"><div><div class="eyebrow">PREFERENCIAS Y CONEXIONES</div><h1>Configuración</h1><p>Administrá tus datos y la conexión con modelos de lenguaje.</p></div></div><div class="settings-grid"><div class="panel ai-settings-panel">
+  <div class="ai-heading"><div><div class="eyebrow">CONFIGURACIÓN DEL MOTOR</div><h2>Elegí tu inteligencia artificial</h2><p>Conectá un proveedor, explorá los modelos disponibles y revisá sus características antes de usarlos.</p></div><span class="ai-status-chip"><i class="status-dot off" id="aiProviderDot"></i><span id="aiProviderState">Sin conexión</span></span></div>
+  <div class="provider-grid" role="group" aria-label="Proveedor de inteligencia artificial">
+    <button type="button" class="provider-card" data-provider="ollama"><span class="provider-icon">◉</span><b>Ollama</b><small>Local · Privado · Sin costo por token</small><em>Usa los modelos instalados en tu PC</em></button>
+    <button type="button" class="provider-card" data-provider="openai"><span class="provider-icon">✳</span><b>OpenAI</b><small>API · Pago por uso</small><em>Modelos GPT y modelos compatibles</em></button>
+    <button type="button" class="provider-card" data-provider="gemini"><span class="provider-icon">✧</span><b>Google Gemini</b><small>API · Nivel gratuito y pago</small><em>Modelos Gemini disponibles para tu proyecto</em></button>
+    <button type="button" class="provider-card provider-card-muted" data-provider="none"><span class="provider-icon">⌘</span><b>Sin proveedor</b><small>Modo manual</small><em>Preparar y copiar prompts sin conexión</em></button>
+  </div>
+  <select id="aiProvider" class="provider-native" aria-hidden="true" tabindex="-1"><option value="none">Sin conexión — copiar prompts</option><option value="ollama">Ollama local</option><option value="openai">OpenAI API</option><option value="gemini">Google Gemini API</option></select>
+  <div class="ai-config-grid">
+    <div class="ai-config-main">
+      <div class="ai-section-title"><span>01</span><div><b>Modelo</b><small>Seleccioná uno detectado o escribí su identificador manualmente.</small></div></div>
+      <div class="model-select-row"><input id="aiModel" list="aiModelSuggestions" placeholder="Ej. gpt-6.1-terra / gemini-3.8-flash / qwen2.5:7b"><datalist id="aiModelSuggestions"></datalist><button class="button secondary" id="refreshModels" type="button">↻ Detectar modelos</button></div>
+      <small id="modelHint" class="muted">La detección consulta los modelos habilitados para tu clave o instalados localmente.</small>
+      <div id="modelInfo" class="model-info-panel"><b>Elegí un proveedor y un modelo</b><p>Vas a ver contexto, modalidad de cobro y datos técnicos cuando estén disponibles.</p></div>
+      <div class="ai-section-title"><span>02</span><div><b>Conexión</b><small>La dirección del puente local normalmente no necesita cambios.</small></div></div>
+      <label class="field-label" for="aiEndpoint">Dirección del puente local</label><input id="aiEndpoint" value="http://localhost:8000"><small class="muted">Requiere ejecutar INICIAR_DOCULAB.bat para conectar con el servidor local.</small>
+    </div>
+    <div class="ai-config-side">
+      <div class="ai-section-title"><span>03</span><div><b>Credenciales</b><small>Claves privadas almacenadas en este equipo.</small></div></div>
+      <label class="field-label" for="aiKey">Clave API</label><input id="aiKey" type="password" autocomplete="off" placeholder="Pegá aquí tu clave API">
+      <small class="muted">Se guarda en local_server/.env. Es texto sin cifrar: no lo compartas ni lo subas.</small>
+      <div class="button-row"><button class="button secondary" id="saveLocalKey">Guardar clave</button></div>
+      <small id="localKeyStatus" class="muted">Consultando el estado de las credenciales locales…</small>
+      <div class="ai-limit-card" id="providerLimits">
+        <b>Límites y uso</b><p>Los límites dependen del proveedor, modelo y nivel de tu cuenta.</p>
+      </div>
+      <div class="button-row ai-actions"><button class="button secondary" id="testConnection">Probar conexión</button><button class="button primary" id="saveSettings">Guardar configuración</button></div>
+      <small id="connectionMessage" class="muted">Seleccioná un proveedor para empezar.</small>
+    </div>
+  </div>
+  <div class="ai-footer-note"><span>ⓘ</span><p>Los límites publicados son orientativos. Las cuotas activas, el saldo y los límites RPM/TPM reales se consultan en el panel de cada proveedor; DOCULAB no puede deducirlos solamente a partir de la clave.</p></div>
+</div><div class="panel"><h2>Almacenamiento y biblioteca</h2><p>Los modelos y proyectos se guardan en este navegador. Exportá copias de seguridad periódicamente.</p><div class="button-row"><button class="button secondary" id="exportLibrary">Exportar biblioteca JSON</button><label class="button secondary file-button">Importar biblioteca<input type="file" id="importLibrary" accept="application/json"></label></div></div><div class="panel danger-zone"><h2>Datos locales</h2><p>Eliminar los datos locales borra los modelos personalizados y proyectos guardados en este navegador.</p><button class="button danger" id="clearData">Borrar datos locales</button></div></div></section>
+      <footer class="footer">DOCULAB <span>·</span> Un espacio modular para pensar, organizar y producir documentos.</footer>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div><div class="modal-backdrop hidden" id="modelModal"><div class="modal panel" role="dialog" aria-modal="true" aria-label="Vista previa del modelo"><button class="modal-close" id="closeModal" aria-label="Cerrar">×</button><div id="modalContent"></div></div></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="app.js"></script>
+  <script src="js/model-builder.js"></script><script src="js/document-editor.js"></script>
+</body>
+</html>
