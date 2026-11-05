@@ -1,11 +1,12 @@
 // DOCULAB service worker.
 // Estrategia: red primero para los archivos propios (así los cambios publicados
 // llegan sin tener que borrar la caché) y caché como respaldo sin conexión.
-const CACHE = "doculab-v22";
+const CACHE = "doculab-v23";
 const FILES = [
   "./",
   "./index.html",
   "./styles.css",
+  "./promptlab.css",
   "./app.js",
   "./js/model-builder.js",
   "./js/document-editor.js",
