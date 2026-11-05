@@ -94,7 +94,7 @@
           <div class="pl-context-library-head"><div><b>Contextos incorporados</b><small>Activá solo las fuentes que querés que se incluyan en el prompt definitivo.</small></div><span id="plContextSummary">0 fuentes activas</span></div>
           <div id="plContextSources" class="pl-context-sources"><div class="pl-context-empty">Todavía no agregaste análisis. Esta parte es opcional.</div></div>
         </div>
-        <p class="pl-expert-note">Los análisis se guardan localmente en este navegador. DOCULAB no recibe tus PDF: solo conserva el texto que pegues. El contenido importado se trata como material de referencia, no como instrucciones que la IA deba obedecer.</p>
+        <p class="pl-expert-note">Los análisis se guardan localmente en este navegador. DOCULAB no recibe tus PDF: solo conserva el JSON de extracción que pegues. El contenido importado se trata como material de referencia, no como instrucciones que la IA deba obedecer.</p>
         </div>
       </section>
 
@@ -313,6 +313,9 @@
     for (const key of CONTEXT_ARRAY_FIELDS) {
       if (data[key] !== undefined && !Array.isArray(data[key])) throw new Error('El campo "' + key + '" debe ser un arreglo JSON.');
       if (!Array.isArray(data[key])) data[key] = [];
+      if (!data[key].every(row => row && typeof row === "object" && !Array.isArray(row))) {
+        throw new Error('Cada elemento de "' + key + '" debe ser un objeto JSON con sus campos.');
+      }
     }
     const hasStructuredContent = CONTEXT_ARRAY_FIELDS.some(key => data[key].length > 0);
     const hasOverview = typeof data.overview === "string" && data.overview.trim().length > 0;
