@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#0e1522">
   <meta name="color-scheme" content="light dark">
-  <meta name="description" content="DOCULAB — biblioteca y estudio de producción documental asistido por IA.">
+  <meta name="description" content="DOCULAB — generador de prompts y estudio de producción documental asistido por IA.">
   <title>DOCULAB — Document Studio</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
@@ -23,11 +23,11 @@
       <a class="brand" href="#" aria-label="DOCULAB inicio">
         <span class="brand-mark">D</span><span><b>DOCULAB</b><small>DOCUMENT STUDIO</small></span>
       </a>
-      <button class="nav-item active" data-view="library"><span>▦</span> Biblioteca <kbd>01</kbd></button>
-      <button class="nav-item" data-view="studio"><span>✳</span> Crear documento <kbd>02</kbd></button>
-      <button class="nav-item" data-view="builder"><span>⌘</span> Constructor de modelos <kbd>03</kbd></button>
-      <button class="nav-item" data-view="projects"><span>▤</span> Mis proyectos <kbd>04</kbd></button>
-      <button class="nav-item" data-view="promptlab"><span>✧</span> Diseñador de prompts <kbd>05</kbd></button>
+      <button class="nav-item active" data-view="promptlab" aria-current="page"><span>✧</span> Generador de prompts <kbd>01</kbd></button>
+      <button class="nav-item" data-view="library"><span>▦</span> Biblioteca <kbd>02</kbd></button>
+      <button class="nav-item" data-view="studio"><span>✳</span> Crear documento <kbd>03</kbd></button>
+      <button class="nav-item" data-view="builder"><span>⌘</span> Constructor de modelos <kbd>04</kbd></button>
+      <button class="nav-item" data-view="projects"><span>▤</span> Mis proyectos <kbd>05</kbd></button>
 
       <div class="sidebar-bottom">
         <div class="connection-card" aria-live="polite">
@@ -41,10 +41,10 @@
     <main class="main" id="main" tabindex="-1">
       <header class="topbar">
         <button class="mobile-menu" id="mobileMenu" aria-label="Abrir menú">☰</button>
-        <div class="breadcrumbs"><span>Workspace</span><i>/</i><b id="crumb">Biblioteca</b></div>
+        <div class="breadcrumbs"><span>Workspace</span><i>/</i><b id="crumb">Generador de prompts</b></div>
         <div class="top-actions"><span class="local-pill"><span class="status-dot"></span> Guardado local</span><button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar tema" title="Cambiar tema"><span id="themeIcon">☾</span><span id="themeLabel">Oscuro</span></button><button class="avatar" title="DOCULAB">D</button></div>
       </header>
-      <section class="view active" id="view-library">
+      <section class="view" id="view-library">
         <div class="page-heading"><div><div class="eyebrow">CENTRO DE RECURSOS</div><h1>Biblioteca de modelos</h1><p>Plantillas, instrucciones y estructuras reutilizables para producir documentos.</p></div><button class="button primary" id="newModelTop">＋ Nuevo modelo</button></div>
         <div class="stats-row"><div class="stat-card"><span>Modelos disponibles</span><b id="statModels">0</b><small>Incluye plantillas iniciales</small></div><div class="stat-card"><span>Mis modelos</span><b id="statCustom">0</b><small>Modelos creados por vos</small></div><div class="stat-card"><span>Proyectos guardados</span><b id="statProjects">0</b><small>Documentos en preparación</small></div></div>
         <div class="library-toolbar"><label class="searchbox"><span>⌕</span><input id="searchInput" placeholder="Buscar modelos, categorías o palabras clave..."></label><select id="categoryFilter" aria-label="Filtrar por categoría"><option value="all">Todas las categorías</option></select><select id="sortFilter" aria-label="Ordenar"><option value="featured">Destacados</option><option value="az">Nombre A–Z</option><option value="newest">Más recientes</option></select></div>
@@ -90,26 +90,85 @@
             <div class="panel model-storage-panel"><h2>Persistencia del modelo</h2><p><b>Local:</b> disponible en este navegador. <b>JSON:</b> portable y versionable. <b>Git:</b> copiá el archivo exportado a <code>models/</code> y confirmá el cambio desde GitHub Desktop.</p><p class="muted">El modelo guardado incluye su estructura, componentes activos e instrucciones. No necesita IA para abrirse ni para generar su documento base.</p></div>
           </div>
         </div>
-      </section><section class="view" id="view-promptlab">
-        <div class="page-heading"><div><div class="eyebrow">INGENIERÍA DE PROMPTS</div><h1>Diseñador de prompts</h1><p>Primero definí qué necesitás. DOCULAB puede crear el prompt que le pedirás a otra IA que diseñe el prompt definitivo.</p></div></div>
-        <div class="promptlab-layout">
-          <div class="panel promptlab-form"><div class="panel-title"><span class="step">01</span><div><h2>Brief del trabajo</h2><p>Describí el resultado final, no redactes todavía las instrucciones técnicas.</p></div></div>
-            <label class="field-label" for="promptGoal">¿Qué querés conseguir?</label><textarea id="promptGoal" rows="3" placeholder="Ej. Quiero un resumen universitario completo de una clase, útil para estudiar para un parcial."></textarea>
-            <label class="field-label" for="promptSources">¿Qué materiales recibirá la IA que haga el trabajo?</label><textarea id="promptSources" rows="3" placeholder="Ej. Una transcripción de la clase y un PDF con las diapositivas del profesor. La transcripción refleja lo explicado oralmente y el PDF contiene el apoyo visual."></textarea>
-            <label class="field-label" for="promptOutputSpec">¿Cómo debería ser el resultado?</label><textarea id="promptOutputSpec" rows="3" placeholder="Ej. Un resumen desarrollado, ordenado por temas, con definiciones, relaciones y ejemplos relevantes."></textarea>
-            <div class="two-fields"><div><label class="field-label" for="promptDepth">Profundidad</label><select id="promptDepth"><option>Intermedia</option><option>Detallada</option><option>Exhaustiva</option><option>Sintética</option></select></div><div><label class="field-label" for="promptTone">Estilo</label><select id="promptTone"><option>Académico claro</option><option>Manual universitario</option><option>Esquemático</option><option>Explicativo y didáctico</option></select></div></div>
-            <label class="field-label" for="promptRules">Reglas y prioridades</label><textarea id="promptRules" rows="4" placeholder="Ej. Priorizar lo explicado por el profesor; usar las diapositivas para completar y ordenar; no inventar información; señalar contradicciones o vacíos; eliminar repeticiones sin perder contenido importante."></textarea>
-            <div class="button-row"><button class="button primary" id="designPrompt">Diseñar el prompt</button><button class="button secondary" id="clearPromptLab">Limpiar</button></div>
-            <small class="muted" id="promptLabStatus" aria-live="polite">Con un proveedor conectado, DOCULAB generará el prompt definitivo. En modo manual, preparará el metaprompt para usarlo en ChatGPT, Gemini u otra IA.</small>
+      </section>      <section class="view active" id="view-promptlab">
+        <div class="prompt-hero">
+          <div class="prompt-hero-copy">
+            <div class="eyebrow">DOCULAB / PROMPT WORKSHOP</div>
+            <h1>De una idea a un prompt listo para usar.</h1>
+            <p>Definí qué necesitás, qué materiales vas a aportar y cómo querés el resultado. DOCULAB construye instrucciones claras, completas y reutilizables.</p>
+            <div class="prompt-hero-points"><span><i></i> Funciona sin conectar una IA</span><span><i></i> Resultado editable</span><span><i></i> Copia en un clic</span></div>
           </div>
-          <div class="panel promptlab-result"><div class="panel-title"><span class="step">02</span><div><h2>Resultado</h2><p>El texto generado será un prompt reutilizable; todavía no es el resumen.</p></div></div>
-            <div class="prompt-stage"><span class="tag">ETAPA 1</span><div><b>Brief</b><small>Tu objetivo y las características del material.</small></div><span class="prompt-arrow">→</span><span class="tag">ETAPA 2</span><div><b>Prompt definitivo</b><small>Instrucciones que se usarán con la transcripción y el PDF.</small></div></div>
-            <label class="field-label" for="promptLabOutput">Prompt generado</label><textarea id="promptLabOutput" class="promptlab-output" rows="24" spellcheck="false" placeholder="El prompt aparecerá aquí. En modo manual se generará un metaprompt que le pedirá a otra IA que redacte el prompt definitivo."></textarea>
-            <div class="button-row"><button class="button secondary" id="copyPromptLab">Copiar resultado</button><button class="button primary" id="usePromptInStudio">Enviar al estudio</button></div>
+          <div class="prompt-hero-aside">
+            <div class="prompt-hero-symbol">✳</div>
+            <div><span class="prompt-hero-kicker">EL PROCESO</span><b>Brief <span>→</span> Instrucciones <span>→</span> Prompt</b><small>El resultado queda listo para pegar en ChatGPT, Gemini, Claude u otro modelo.</small></div>
+          </div>
+        </div>
+
+        <div class="prompt-presets-heading"><div><div class="eyebrow">PUNTO DE PARTIDA</div><h2>Empezá con una estructura</h2><p>Podés elegir una base y después adaptar cada campo a tu trabajo.</p></div></div>
+        <div class="prompt-presets">
+          <button class="prompt-preset" type="button" data-preset="study"><span class="prompt-preset-icon">▤</span><span><b>Guía de estudio</b><small>Organizar clases y bibliografía para estudiar.</small></span><span class="prompt-preset-arrow">↗</span></button>
+          <button class="prompt-preset" type="button" data-preset="summary"><span class="prompt-preset-icon">≡</span><span><b>Resumen / síntesis</b><small>Condensar sin perder conceptos importantes.</small></span><span class="prompt-preset-arrow">↗</span></button>
+          <button class="prompt-preset" type="button" data-preset="comparison"><span class="prompt-preset-icon">⇄</span><span><b>Cuadro comparativo</b><small>Contrastar autores, teorías o procesos.</small></span><span class="prompt-preset-arrow">↗</span></button>
+          <button class="prompt-preset" type="button" data-preset="questions"><span class="prompt-preset-icon">?</span><span><b>Banco de preguntas</b><small>Crear ejercicios y evaluaciones fundamentadas.</small></span><span class="prompt-preset-arrow">↗</span></button>
+        </div>
+
+        <div class="promptlab-layout">
+          <div class="panel promptlab-form">
+            <div class="prompt-form-heading"><div class="step">01</div><div><h2>Definí el encargo</h2><p>No necesitás saber escribir prompts: contá qué querés conseguir.</p></div></div>
+            <label class="field-label" for="promptType">Tipo de trabajo</label>
+            <select id="promptType">
+              <option value="general">Tarea general</option>
+              <option value="study">Estudio y aprendizaje</option>
+              <option value="summary">Resumen y síntesis</option>
+              <option value="analysis">Análisis de textos o conceptos</option>
+              <option value="comparison">Comparación</option>
+              <option value="questions">Preguntas y evaluación</option>
+              <option value="research">Investigación</option>
+              <option value="writing">Redacción académica</option>
+              <option value="document">Diseño de documentos</option>
+              <option value="code">Programación y desarrollo</option>
+            </select>
+
+            <label class="field-label" for="promptGoal">¿Qué querés conseguir?</label>
+            <textarea id="promptGoal" rows="3" placeholder="Ej. Necesito preparar un material de estudio completo para rendir un parcial. Quiero comprender los conceptos y sus relaciones, no memorizar una lista."></textarea>
+
+            <label class="field-label" for="promptSources">¿Qué materiales o fuentes recibirá la IA?</label>
+            <textarea id="promptSources" rows="3" placeholder="Ej. Una transcripción de la clase, las diapositivas del profesor y dos capítulos de bibliografía. Indicá qué aporta cada material y cuál debería tener prioridad."></textarea>
+
+            <label class="field-label" for="promptAudience">¿Para quién o en qué contexto se usará?</label>
+            <input id="promptAudience" placeholder="Ej. Estudiante universitario que prepara un examen de nivel introductorio.">
+
+            <label class="field-label" for="promptOutputSpec">¿Qué resultado esperás recibir?</label>
+            <textarea id="promptOutputSpec" rows="3" placeholder="Ej. Una guía desarrollada por unidades, con definiciones, explicaciones, relaciones, ejemplos y precisiones que suelen evaluarse."></textarea>
+
+            <div class="two-fields">
+              <div><label class="field-label" for="promptDepth">Profundidad</label><select id="promptDepth"><option>Intermedia</option><option>Detallada</option><option>Exhaustiva</option><option>Sintética</option></select></div>
+              <div><label class="field-label" for="promptTone">Estilo</label><select id="promptTone"><option>Académico claro</option><option>Manual universitario</option><option>Esquemático</option><option>Explicativo y didáctico</option><option>Técnico y preciso</option><option>Directo y operativo</option></select></div>
+            </div>
+
+            <label class="field-label" for="promptRules">Reglas, prioridades o cosas que debe evitar</label>
+            <textarea id="promptRules" rows="4" placeholder="Ej. Priorizar la explicación del profesor, no inventar información, conservar las distinciones conceptuales, señalar contradicciones y eliminar repeticiones sin perder contenido relevante."></textarea>
+
+            <div class="prompt-form-actions">
+              <button class="button primary" id="designPrompt" type="button"><span>✳</span> Generar prompt</button>
+              <button class="button secondary" id="clearPromptLab" type="button">Limpiar campos</button>
+            </div>
+            <small class="muted promptlab-status" id="promptLabStatus" aria-live="polite">Modo local disponible: generá un prompt completo sin configurar proveedores. Desde Configuración podés conectar Ollama, OpenAI o Gemini para mejorarlo con IA.</small>
+          </div>
+
+          <div class="panel promptlab-result">
+            <div class="prompt-result-heading">
+              <div class="prompt-result-title"><div class="step">02</div><div><h2>Tu prompt</h2><p>Un resultado autónomo, editable y listo para copiar o reutilizar.</p></div></div>
+              <span class="tag">SALIDA EDITABLE</span>
+            </div>
+            <div class="prompt-output-label"><label class="field-label" for="promptLabOutput">PROMPT GENERADO</label><span id="promptOutputMeta">0 palabras · 0 caracteres</span></div>
+            <textarea id="promptLabOutput" class="promptlab-output" rows="28" spellcheck="false" placeholder="Tu prompt aparecerá aquí. Primero completá el encargo y seleccioná «Generar prompt»."></textarea>
+            <div class="prompt-output-actions"><button class="button secondary" id="copyPromptLab" type="button">Copiar prompt</button><button class="button primary" id="usePromptInStudio" type="button">Usar en Crear documento ↗</button></div>
+            <div class="prompt-output-note"><span>ⓘ</span><p>El generador redacta instrucciones, no ejecuta el trabajo. Copiá el resultado y adjuntá los materiales en la conversación donde vayas a utilizarlo.</p></div>
           </div>
         </div>
       </section>
-      <section class="view" id="view-projects"><div class="page-heading"><div><div class="eyebrow">ARCHIVO PERSONAL</div><h1>Mis proyectos</h1><p>Documentos guardados para continuar, revisar o exportar.</p></div></div><div class="project-list" id="projectList"></div><div class="empty-state hidden" id="emptyProjects"><b>Todavía no hay proyectos</b><p>Los documentos que guardes desde el estudio aparecerán acá.</p><button class="button primary" data-go="studio">Crear primer documento</button></div></section>
+<section class="view" id="view-projects"><div class="page-heading"><div><div class="eyebrow">ARCHIVO PERSONAL</div><h1>Mis proyectos</h1><p>Documentos guardados para continuar, revisar o exportar.</p></div></div><div class="project-list" id="projectList"></div><div class="empty-state hidden" id="emptyProjects"><b>Todavía no hay proyectos</b><p>Los documentos que guardes desde el estudio aparecerán acá.</p><button class="button primary" data-go="studio">Crear primer documento</button></div></section>
       <section class="view" id="view-settings"><div class="page-heading"><div><div class="eyebrow">PREFERENCIAS Y CONEXIONES</div><h1>Configuración</h1><p>Administrá tus datos y la conexión con modelos de lenguaje.</p></div></div><div class="settings-grid"><div class="panel ai-settings-panel">
   <div class="ai-heading"><div><div class="eyebrow">CONFIGURACIÓN DEL MOTOR</div><h2>Elegí tu inteligencia artificial</h2><p>Conectá un proveedor, explorá los modelos disponibles y revisá sus características antes de usarlos.</p></div><span class="ai-status-chip"><i class="status-dot off" id="aiProviderDot"></i><span id="aiProviderState">Sin conexión</span></span></div>
   <div class="provider-grid" role="group" aria-label="Proveedor de inteligencia artificial">
