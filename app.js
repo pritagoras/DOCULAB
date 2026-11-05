@@ -54,7 +54,7 @@ function renderSelect(){
  }
  renderStudioModelSummary();renderPromptLayoutPreview();
 }
-function editModel(function editModel(id){
+function editModel(id){
  const model=models().find(item=>item.id===id);
  if(!model){toast("No se encontró el modelo seleccionado.");return}
  activeId=id;
@@ -100,7 +100,7 @@ function promptLabBrief(){
   useLayout:$("#promptUseLayout")?.checked||false,layoutId:$("#promptLayoutModel")?.value||""
  };
 }
-function promptTypeInstructions(function promptTypeInstructions(type){
+function promptTypeInstructions(type){
  const types={
   general:{role:"especialista en la materia y diseñador de soluciones rigurosas",guidance:"Resuelve el encargo con un procedimiento ordenado. Identifica las decisiones importantes antes de producir el resultado."},
   study:{role:"docente universitario y especialista en diseño de materiales de aprendizaje",guidance:"Organizá el contenido para favorecer comprensión y estudio. Diferenciá definiciones, mecanismos, relaciones, ejemplos y precisiones; señalá los puntos que suelen confundirse sin inventar exigencias de evaluación."},
@@ -212,7 +212,7 @@ function clearPromptLab(){
  $("#promptLabStatus").textContent="Campos limpios. Describí el encargo o elegí una estructura de inicio.";
  updatePromptOutputMeta();
 }
-function applyPromptPreset(function applyPromptPreset(key){
+function applyPromptPreset(key){
  const presets={
   study:{
    promptType:"study",
@@ -267,7 +267,7 @@ function promptText(){
  ].join("\n\n");
 }
 function tab(t){$$(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===t));$("#promptOutput").classList.toggle("hidden",t!=="prompt");$("#documentOutputWorkspace").classList.toggle("hidden",t!=="document");if(t==="document")window.DOCULAB_RENDER_OUTPUT_PREVIEW?.()}
-function build()function build(){let p=promptText();$("#promptOutput").value=p;tab("prompt");$("#studioStatus").textContent="Prompt preparado. Copialo a tu modelo de lenguaje.";return p}
+function build(){let p=promptText();$("#promptOutput").value=p;tab("prompt");$("#studioStatus").textContent="Prompt preparado. Copialo a tu modelo de lenguaje.";return p}
 async function generate(){let p=build(),provider=$("#aiProvider").value;if(provider==="none"){let m=models().find(x=>x.id===$("#studioModel").value)||models()[0],sections=modelPromptSections(m).map(s=>s.title),title=$("#docTitle").value.trim()||m.name;$("#documentOutput").value=title+"\n\n"+sections.map((s,i)=>(i+1)+". "+s+"\n\n[Completar esta sección]\n").join("\n");window.DOCULAB_RENDER_OUTPUT_PREVIEW?.();tab("document");$("#studioStatus").textContent="Estructura creada sin IA. Editá el contenido y revisá la página A4.";return}let endpoint=$("#aiEndpoint").value.replace(/\/$/,"");$("#studioStatus").textContent="Consultando servicio...";try{let r=await fetch(endpoint+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({provider,model:$("#aiModel").value,prompt:p,api_key:""})});if(!r.ok)throw Error("HTTP "+r.status);let d=await r.json();$("#documentOutput").value=d.text||d.response||"";window.DOCULAB_RENDER_OUTPUT_PREVIEW?.();renderObservedUsage(d);tab("document");$("#studioStatus").textContent="Respuesta recibida."}catch(e){$("#studioStatus").textContent="No se pudo conectar: "+e.message;toast("Error de conexión")}}
 function saveProject(){if(!$("#promptOutput").value)build();let p={id:currentId||"p_"+Date.now(),title:$("#docTitle").value||"Proyecto sin título",modelId:$("#studioModel").value,updated:new Date().toISOString(),prompt:$("#promptOutput").value,document:$("#documentOutput").value};let i=projects.findIndex(x=>x.id===p.id);if(i<0)projects.unshift(p);else projects[i]=p;currentId=p.id;put("projects",projects);renderLibrary();toast("Proyecto guardado")}
 function renderProjects(){$("#projectList").innerHTML=projects.map(p=>'<div class="project-item"><div class="project-icon">▤</div><div class="project-info"><b>'+esc(p.title)+'</b><small>'+new Date(p.updated).toLocaleString("es-AR")+'</small></div><div class="project-actions"><button class="button secondary small" data-open="'+esc(p.id)+'">Abrir</button><button class="button ghost small" data-del="'+esc(p.id)+'">Eliminar</button></div></div>').join("");$("#emptyProjects").classList.toggle("hidden",projects.length>0)}
