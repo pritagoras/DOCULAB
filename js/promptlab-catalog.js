@@ -12,6 +12,42 @@
    ========================================================================== */
 window.PROMPTLAB_CATALOG = {
 
+  disciplines: [
+    { id: "biologia", label: "Biología" },
+    { id: "semiologia", label: "Semiología y semiótica" },
+    { id: "psicologia", label: "Psicología" },
+    { id: "filosofia", label: "Filosofía" },
+    { id: "medicina", label: "Medicina y ciencias de la salud" },
+    { id: "quimica", label: "Química" },
+    { id: "fisica", label: "Física" },
+    { id: "matematica", label: "Matemática" },
+    { id: "estadistica", label: "Estadística" },
+    { id: "historia", label: "Historia" },
+    { id: "sociologia", label: "Sociología" },
+    { id: "derecho", label: "Derecho" },
+    { id: "educacion", label: "Educación y pedagogía" },
+    { id: "linguistica", label: "Lingüística" },
+    { id: "literatura", label: "Literatura y crítica literaria" },
+    { id: "economia", label: "Economía" },
+    { id: "informatica", label: "Informática y computación" },
+    { id: "comunicacion", label: "Comunicación" },
+    { id: "antropologia", label: "Antropología" },
+    { id: "geografia", label: "Geografía" },
+    { id: "arte", label: "Historia del arte y artes visuales" },
+    { id: "ingenieria", label: "Ingeniería" },
+    { id: "politica", label: "Ciencia política" }
+  ],
+
+  expertProfiles: [
+    { id: "auto", label: "Según el tipo de trabajo", role: "" },
+    { id: "docente", label: "Docente universitario/a", role: "docente universitario/a" },
+    { id: "investigador", label: "Investigador/a académico/a", role: "investigador/a académico/a" },
+    { id: "profesional", label: "Especialista profesional", role: "especialista profesional" },
+    { id: "divulgador", label: "Divulgador/a científico/a", role: "divulgador/a científico/a" },
+    { id: "tutor", label: "Tutor/a académico/a", role: "tutor/a académico/a" },
+    { id: "custom", label: "Perfil personalizado…", role: "" }
+  ],
+
   tasks: [
     { id: "resumen", label: "Resumen de clase",
       desc: "Condensa una clase o texto sin perder distinciones.",
