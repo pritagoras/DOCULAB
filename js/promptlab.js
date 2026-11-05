@@ -224,8 +224,10 @@
     const area = specialty && discipline ? specialty + " dentro del área de " + discipline
       : (specialty || discipline);
     if (area) {
-      const opening = profileRole || "especialista";
-      return `Actuá como ${opening}, con especialización en ${area}. Tu función será ${t.role}.`;
+      const opening = profileRole
+        ? `Actuá como ${profileRole}, con especialización en ${area}`
+        : `Actuá como especialista en ${area}`;
+      return opening + `. Tu función será ${t.role}.`;
     }
     if (profileRole) return `Actuá como ${profileRole}, con la función de ${t.role}.`;
     return `Actuá como ${t.role}.`;
