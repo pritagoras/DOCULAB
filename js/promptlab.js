@@ -413,7 +413,7 @@ ${S.goal.trim() || "[El usuario todavía no definió el objetivo]"}
 MATERIALES QUE RECIBIRÁ LA IA EJECUTORA:
 ${S.sources.trim() || "[Materiales por especificar]"}
 
-${contextForPrompt() ? "CONTEXTO EXTRAÍDO QUE DEBE INTEGRARSE:\\n" + contextForPrompt() + "\\n" : ""}
+${contextForPrompt() ? "CONTEXTO EXTRAÍDO QUE DEBE INTEGRARSE:\n" + contextForPrompt() + "\n" : ""}
 RESULTADO ESPERADO:
 ${S.output.trim() || "[Formato y contenido por especificar]"}
 Profundidad: ${S.depth}.
