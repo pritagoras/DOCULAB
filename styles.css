@@ -458,6 +458,24 @@ code{font:500 12px var(--font-mono);background:var(--surface-3);padding:2px 6px;
 /* Páginas de referencia PDF en el constructor */
 .reference-pdf-panel{margin-top:14px;padding:16px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}.reference-pdf-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px}.reference-pdf-heading b,.reference-pdf-heading small{display:block}.reference-pdf-heading b{font-size:13px}.reference-pdf-heading small{font-size:11px;color:var(--muted);margin-top:3px}.reference-pdf-heading>span{font:11px var(--font-mono);color:var(--accent-ink);white-space:nowrap}.reference-pdf-drop{padding:12px}.reference-page-controls{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end;margin-top:12px}.reference-page-controls .field-label{grid-column:1/-1;margin:0}.reference-page-controls input{min-width:0}.reference-pdf-pages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}.reference-page{margin:0;padding:7px;border:1px solid var(--line);border-radius:7px;background:var(--surface-2);min-width:0}.reference-page img{display:block;width:100%;height:auto;max-height:320px;object-fit:contain;background:#fff}.reference-page figcaption{font:10px var(--font-mono);color:var(--muted);text-align:center;padding-top:6px}@media(max-width:560px){.reference-page-controls{grid-template-columns:1fr 1fr}.reference-page-controls .field-label{grid-column:1/-1}.reference-page-controls input{grid-column:1/-1}.reference-pdf-pages{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+
+/* Galería de previews locales en la ficha de cada modelo */
+.model-reference-gallery{margin:16px 0 4px;padding:16px;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+.model-reference-gallery-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.model-reference-gallery-head b,.model-reference-gallery-head small{display:block}
+.model-reference-gallery-head b{font-size:13px;color:var(--ink)}
+.model-reference-gallery-head small,.model-reference-local-note{font-size:11px;line-height:1.5;color:var(--muted);margin-top:4px}
+.model-reference-gallery-head>span{font:11px var(--font-mono);color:var(--accent-ink);white-space:nowrap}
+.model-reference-upload{position:relative;display:inline-flex;overflow:hidden;margin:2px 0 8px;cursor:pointer}
+.model-reference-upload input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.model-reference-local-note{display:block;max-width:760px}
+.model-reference-pages{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-top:12px}
+.model-reference-pages .reference-page{position:relative}
+.model-reference-pages .reference-page img{max-height:420px}
+.model-reference-remove{display:block;margin:5px auto 0;color:var(--danger)}
+.model-reference-empty{padding:14px;border:1px dashed var(--line-strong);border-radius:8px;color:var(--muted);font-size:12px;text-align:center}
+@media(max-width:560px){.model-reference-gallery{padding:12px}.model-reference-pages{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 /* Diseñador de prompts */
 .promptlab-layout{display:grid;grid-template-columns:minmax(340px,.9fr) minmax(420px,1.1fr);gap:18px;align-items:start}
 .promptlab-form,.promptlab-result{min-width:0}
