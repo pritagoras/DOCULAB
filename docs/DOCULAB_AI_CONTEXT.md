@@ -3,7 +3,7 @@
 Este documento es el manual interno que DOCULAB adjunta automáticamente a TODAS las solicitudes enviadas al puente local de IA. Es contexto del producto, no contenido que deba copiarse en la respuesta al usuario.
 
 ## 1. Identidad y propósito
-DOCULAB es una aplicación web cuyo punto de entrada principal es un generador de prompts: transforma un brief del usuario en instrucciones autónomas, completas y reutilizables. También permite diseñar, guardar, reutilizar y completar plantillas documentales modulares. El generador puede crear prompts en modo local sin IA y, si hay un proveedor configurado, optimizarlos con IA. La biblioteca, el constructor de modelos, el estudio de documentos y los proyectos siguen siendo módulos independientes. La IA es opcional: tanto los prompts base como las plantillas guardadas deben poder utilizarse sin conectar un proveedor.
+DOCULAB es una aplicación web cuyo punto de entrada principal es un generador de prompts: transforma un brief del usuario en instrucciones autónomas, completas y reutilizables. También permite diseñar, guardar, reutilizar y completar plantillas documentales modulares. El generador puede crear prompts en modo local sin IA y, si hay un proveedor configurado, optimizarlos con IA. Puede incorporar una maqueta documental: sus componentes activos, orden e instrucciones se incluyen en el prompt; al transferirlo al estudio, se selecciona el mismo modelo. La biblioteca, el constructor de modelos, el estudio de documentos y los proyectos siguen siendo módulos independientes. La IA es opcional: tanto los prompts base como las plantillas guardadas deben poder utilizarse sin conectar un proveedor.
 
 ## 2. Arquitectura
 - Frontend estático: `index.html`, `styles.css`, `app.js`.
@@ -86,6 +86,8 @@ Los modelos pueden incluir componentes personalizados, pero deben describir clar
 10. Si quiere versionar un modelo, copia el JSON y actualiza el índice en el repositorio usando GitHub Desktop.
 
 La preview del constructor representa la estructura de la plantilla. La preview del editor representa el contenido actual del documento. No afirmar que son lo mismo.
+
+La pantalla principal puede activar «Usar una maqueta PDF de DOCULAB»: se debe incluir en el prompt el nombre de la plantilla, sus componentes activos en orden y sus instrucciones. Al pasar el prompt al estudio, se debe conservar esa selección. Las maquetas actuales definen estructura y componentes, no tipografías o márgenes independientes. El estudio genera una previsualización A4 multipágina, separa portada y contenido y permite editar el texto o cada sección antes de exportar/imprimir como PDF.
 
 ## 7. Integración de IA
 - El puente local FastAPI expone `GET /health` y `POST /api/generate`.
