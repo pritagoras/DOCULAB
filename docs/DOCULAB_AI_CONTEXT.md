@@ -3,7 +3,7 @@
 Este documento es el manual interno que DOCULAB adjunta automáticamente a TODAS las solicitudes enviadas al puente local de IA. Es contexto del producto, no contenido que deba copiarse en la respuesta al usuario.
 
 ## 1. Identidad y propósito
-DOCULAB es una aplicación web para diseñar, guardar, reutilizar y completar plantillas documentales modulares. La IA es opcional: una plantilla guardada debe poder abrirse, editarse y reutilizarse sin IA. DOCULAB no es un editor de prompts genérico ni debe confundirse con otros proyectos.
+DOCULAB es una aplicación web cuyo punto de entrada principal es un generador de prompts: transforma un brief del usuario en instrucciones autónomas, completas y reutilizables. También permite diseñar, guardar, reutilizar y completar plantillas documentales modulares. El generador puede crear prompts en modo local sin IA y, si hay un proveedor configurado, optimizarlos con IA. La biblioteca, el constructor de modelos, el estudio de documentos y los proyectos siguen siendo módulos independientes. La IA es opcional: tanto los prompts base como las plantillas guardadas deben poder utilizarse sin conectar un proveedor.
 
 ## 2. Arquitectura
 - Frontend estático: `index.html`, `styles.css`, `app.js`.
@@ -74,14 +74,16 @@ El catálogo base actual contiene:
 Los modelos pueden incluir componentes personalizados, pero deben describir claramente su propósito e instrucciones y respetar el mismo esquema.
 
 ## 6. Flujo de trabajo
-1. El usuario diseña o selecciona un modelo.
-2. Activa/desactiva y ordena componentes.
-3. Guarda el modelo localmente o exporta su JSON.
-4. Crea un documento a partir del modelo.
-5. Completa cada sección manualmente o solicita a la IA que genere una sección.
-6. Revisa y edita el contenido.
-7. Previsualiza, exporta HTML o imprime/guarda como PDF.
-8. Si quiere versionar un modelo, copia el JSON y actualiza el índice en el repositorio usando GitHub Desktop.
+1. Desde la pantalla principal, el usuario describe un encargo y genera un prompt completo y reutilizable. Este proceso funciona en modo local; un proveedor conectado puede optimizar el prompt, pero no es obligatorio.
+2. El usuario copia el prompt para usarlo en otra IA o lo transfiere al estudio de documentos.
+3. Para producir documentos dentro de DOCULAB, el usuario diseña o selecciona un modelo.
+4. Activa/desactiva y ordena componentes.
+5. Guarda el modelo localmente o exporta su JSON.
+6. Crea un documento a partir de un modelo.
+7. Completa cada sección manualmente o solicita a la IA que genere una sección.
+8. Revisa y edita el contenido.
+9. Previsualiza, exporta HTML o imprime/guarda como PDF.
+10. Si quiere versionar un modelo, copia el JSON y actualiza el índice en el repositorio usando GitHub Desktop.
 
 La preview del constructor representa la estructura de la plantilla. La preview del editor representa el contenido actual del documento. No afirmar que son lo mismo.
 
