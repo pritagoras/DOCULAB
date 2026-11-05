@@ -250,7 +250,7 @@
     const out = [];
     out.push(expertRole(t));
     const disciplineContext = expertDisciplineContext();
-    if (disciplineContext) out.push("MARCO DISCIPLINAR Y PERFIL\\n" + disciplineContext);
+    if (disciplineContext) out.push("MARCO DISCIPLINAR Y PERFIL\n" + disciplineContext);
     out.push(`OBJETIVO\n${S.goal.trim() || "[Definí el objetivo del trabajo]"}`);
     out.push(`MATERIALES\n${S.sources.trim() || "[Indicá qué materiales vas a adjuntar]"}\nSi todavía no recibiste los materiales, pedilos y esperá a tenerlos antes de empezar.`);
     out.push(`RESULTADO ESPERADO\n${S.output.trim() || "[Describí cómo debería ser el resultado]"}\nProfundidad: ${S.depth}.`
@@ -277,7 +277,7 @@
 TIPO DE TRABAJO: ${t.label}
 ROL Y ESPECIALIZACIÓN SUGERIDOS PARA LA IA EJECUTORA:
 ${expertRole(t)}
-${expertDisciplineContext() ? "MARCO DISCIPLINAR:\\n" + expertDisciplineContext() + "\\n" : ""}
+${expertDisciplineContext() ? "MARCO DISCIPLINAR:\n" + expertDisciplineContext() + "\n" : ""}
 OBJETIVO DEL TRABAJO FINAL:
 ${S.goal.trim() || "[El usuario todavía no definió el objetivo]"}
 
