@@ -197,10 +197,10 @@
 
     const layout = S.useLayout && window.DOCULAB_GET_MODEL ? window.DOCULAB_GET_MODEL(S.layoutId) : null;
     if(layout){const parts=(layout.components||[]).filter(c=>c.enabled!==false).sort((a,b)=>(a.order??0)-(b.order??0));
-      out.push("MAQUETA DOCULAB: "+layout.name+"\\nCategoría: "+(layout.category||"Personalizada")+"\\nESTRUCTURA OBLIGATORIA:\\n"+
-      parts.map((c,i)=>(i+1)+". "+c.title+(c.instruction?" — "+c.instruction:"")).join("\\n")+
-      (layout.instructions?"\\nInstrucciones generales: "+layout.instructions:"")+
-      "\\nUsá encabezados Markdown ## con los títulos exactos y ### para subsecciones. Respetá el orden. No omitas apartados activos. El resultado debe poder distribuirse en el editor por secciones de DOCULAB.");
+      out.push("MAQUETA DOCULAB: "+layout.name+"\nCategoría: "+(layout.category||"Personalizada")+"\nESTRUCTURA OBLIGATORIA:\n"+
+      parts.map((c,i)=>(i+1)+". "+c.title+(c.instruction?" — "+c.instruction:"")).join("\n")+
+      (layout.instructions?"\nInstrucciones generales: "+layout.instructions:"")+
+      "\nUsá encabezados Markdown ## con los títulos exactos y ### para subsecciones. Respetá el orden. No omitas apartados activos. El resultado debe poder distribuirse en el editor por secciones de DOCULAB.");
     }
     return out.join("\n\n");
   }
@@ -228,7 +228,7 @@ ${style.map(s => "- " + s).join("\n")}
 REGLAS Y PRIORIDADES:
 ${rules.length ? rules.map(r => "- " + r.text).join("\n") : "- No inventar información; distinguir lo respaldado por las fuentes de lo que no."}
 ${S.fewshot.trim() ? `\nEJEMPLO DE SALIDA DESEADA (incorporalo al prompt como modelo de formato y estilo, no de contenido):\n"""\n${S.fewshot.trim()}\n"""\n` : ""}${S.notes.trim() ? `\nNOTAS ADICIONALES:\n${S.notes.trim()}\n` : ""}
-${S.useLayout && window.DOCULAB_GET_MODEL && window.DOCULAB_GET_MODEL(S.layoutId) ? (() => { const m=window.DOCULAB_GET_MODEL(S.layoutId), p=(m.components||[]).filter(c=>c.enabled!==false).sort((a,b)=>(a.order??0)-(b.order??0)); return "MAQUETA DOCULAB: "+m.name+"\\nSecciones obligatorias en orden:\\n"+p.map((c,i)=>(i+1)+". "+c.title+(c.instruction?" — "+c.instruction:"")).join("\\n")+"\\nInstrucciones generales: "+(m.instructions||"")+"\\nEl prompt definitivo debe exigir encabezados Markdown ## con títulos exactos y contenido listo para distribuir en el editor por secciones de DOCULAB."; })() : ""}
+${S.useLayout && window.DOCULAB_GET_MODEL && window.DOCULAB_GET_MODEL(S.layoutId) ? (() => { const m=window.DOCULAB_GET_MODEL(S.layoutId), p=(m.components||[]).filter(c=>c.enabled!==false).sort((a,b)=>(a.order??0)-(b.order??0)); return "MAQUETA DOCULAB: "+m.name+"\nSecciones obligatorias en orden:\n"+p.map((c,i)=>(i+1)+". "+c.title+(c.instruction?" — "+c.instruction:"")).join("\n")+"\nInstrucciones generales: "+(m.instructions||"")+"\nEl prompt definitivo debe exigir encabezados Markdown ## con títulos exactos y contenido listo para distribuir en el editor por secciones de DOCULAB."; })() : ""}
 
 INSTRUCCIONES PARA VOS, DISEÑADOR DEL PROMPT:
 1. Convertí el brief en instrucciones operativas, precisas y sin ambigüedades.
