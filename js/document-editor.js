@@ -79,7 +79,7 @@ function structuredBlocks(){
  return blocks;
 }
 function normalizeSectionHeading(value){
- return String(value||"").replace(/^#{1,3}\s*/,"").replace(/^\d+[.)]\s*/,"").replace(/[：:]$/,"").trim().toLocaleLowerCase();
+ return String(value||"").replace(/^#{1,3}\s*/,"").replace(/^\d+(?:[.)]|[·—-])\s*/,"").replace(/\*\*/g,"").replace(/^\*|\*$/g,"").replace(/[：:]$/,"").trim().toLocaleLowerCase();
 }
 function importExistingDocument(raw,components){
  const text=String(raw||"").trim();if(!text)return {matched:0,usedFallback:false};
