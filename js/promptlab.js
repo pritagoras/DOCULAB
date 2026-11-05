@@ -11,6 +11,7 @@
 
   const K_DRAFT = "promptlab_draft", K_RECIPES = "promptlab_recipes", K_CUSTOM = "promptlab_custom";
   const blank = () => ({ task: "libre", goal: "", sources: "", output: "", depth: "Intermedia", layoutId: "", useLayout: false,
+    discipline: "", specialty: "", expertProfile: "auto", customExpertProfile: "",
     tones: [], formality: 3, voice: "impersonal", variant: "rioplatense", rules: ["no-inventar"],
     formats: [], fewshot: "", notes: "" });
 
@@ -34,6 +35,31 @@
   </div></div>
   <div class="promptlab-layout pl2">
     <div class="panel promptlab-form">
+      <section class="pl-block pl-discipline-block">
+        <div class="pl-head"><span class="pl-section-kicker">MARCO DE CONOCIMIENTO</span><h2>¿Desde qué área debe responder la IA?</h2><p>Definí la disciplina y el perfil del experto. Esto determina el enfoque conceptual, no el tono de escritura.</p></div>
+        <div class="pl-expert-grid">
+          <div class="pl-expert-field pl-expert-field-wide">
+            <label class="field-label" for="plDiscipline">Disciplina o materia</label>
+            <input id="plDiscipline" list="plDisciplineSuggestions" placeholder="Ej. Biología, Semiología, Psicología…">
+            <datalist id="plDisciplineSuggestions"></datalist>
+            <small>Elegí una sugerencia o escribí cualquier otra materia.</small>
+          </div>
+          <div class="pl-expert-field">
+            <label class="field-label" for="plSpecialty">Especialidad (opcional)</label>
+            <input id="plSpecialty" placeholder="Ej. Genética molecular, semiótica del cuerpo…">
+          </div>
+          <div class="pl-expert-field">
+            <label class="field-label" for="plExpertProfile">Perfil del experto</label>
+            <select id="plExpertProfile"></select>
+          </div>
+          <div class="pl-expert-field pl-expert-field-wide hidden" id="plCustomExpertWrap">
+            <label class="field-label" for="plCustomExpertProfile">Describí el perfil profesional</label>
+            <input id="plCustomExpertProfile" placeholder="Ej. Docente e investigador especializado en genética clínica…">
+          </div>
+        </div>
+        <p class="pl-expert-note">La IA recibirá instrucciones para usar los conceptos, métodos y vocabulario propios de esa disciplina, sin forzar marcos teóricos que no correspondan.</p>
+      </section>
+
       <section class="pl-block">
         <div class="pl-head"><h2>¿Qué tipo de trabajo es?</h2><p>Al elegir uno se precargan tono, reglas y formato. Después podés cambiar todo.</p></div>
         <div id="plTasks" class="pl-taskgrid" role="radiogroup" aria-label="Tipo de trabajo"></div>
@@ -150,10 +176,16 @@
     $("#plVoice").innerHTML = C.voices.map(v => `<option value="${v.id}">${esc(v.label)}</option>`).join("");
     $("#plVariant").innerHTML = C.variants.map(v => `<option value="${v.id}">${esc(v.label)}</option>`).join("");
     $("#plDepth").innerHTML = C.depths.map(d => `<option>${esc(d)}</option>`).join("");
+    $("#plDisciplineSuggestions").innerHTML = (C.disciplines || []).map(d => `<option value="${esc(d.label)}"></option>`).join("");
+    $("#plExpertProfile").innerHTML = (C.expertProfiles || []).map(p => `<option value="${esc(p.id)}">${esc(p.label)}</option>`).join("");
   }
   function syncFields() {
     $("#plGoal").value = S.goal; $("#plSources").value = S.sources; $("#plOutput").value = S.output;
     $("#plFewshot").value = S.fewshot; $("#plNotes").value = S.notes;
+    $("#plDiscipline").value = S.discipline || ""; $("#plSpecialty").value = S.specialty || "";
+    $("#plExpertProfile").value = S.expertProfile || "auto";
+    $("#plCustomExpertProfile").value = S.customExpertProfile || "";
+    $("#plCustomExpertWrap").classList.toggle("hidden", S.expertProfile !== "custom");
     $("#plVoice").value = S.voice; $("#plVariant").value = S.variant; $("#plDepth").value = S.depth;
     $("#plFormality").value = S.formality;
     $("#plUseLayout").checked=!!S.useLayout;$("#plLayoutOptions").classList.toggle("hidden",!S.useLayout);$("#plLayoutModel").value=S.layoutId||"";renderLayoutPreview();
@@ -183,10 +215,42 @@
     return { t, tones, rules, formats, style };
   }
 
+  function expertRole(t) {
+    const discipline = String(S.discipline || "").trim();
+    const specialty = String(S.specialty || "").trim();
+    const profile = byId(C.expertProfiles || [], S.expertProfile || "auto");
+    const customProfile = String(S.customExpertProfile || "").trim();
+    const profileRole = S.expertProfile === "custom" ? customProfile : (profile?.role || "");
+    const area = specialty && discipline ? specialty + " dentro del área de " + discipline
+      : (specialty || discipline);
+    if (area) {
+      const opening = profileRole || "especialista";
+      return `Actuá como ${opening}, con especialización en ${area}. Tu función será ${t.role}.`;
+    }
+    if (profileRole) return `Actuá como ${profileRole}, con la función de ${t.role}.`;
+    return `Actuá como ${t.role}.`;
+  }
+  function expertDisciplineContext() {
+    const discipline = String(S.discipline || "").trim();
+    const specialty = String(S.specialty || "").trim();
+    const profile = byId(C.expertProfiles || [], S.expertProfile || "auto");
+    const customProfile = String(S.customExpertProfile || "").trim();
+    const profileRole = S.expertProfile === "custom" ? customProfile : (profile?.role || "");
+    if (!discipline && !specialty && !profileRole) return "";
+    return [
+      discipline ? "Disciplina principal: " + discipline + "." : "",
+      specialty ? "Especialidad o subcampo: " + specialty + "." : "",
+      profileRole ? "Perfil profesional: " + profileRole + "." : "",
+      "Abordaje: utilizá la terminología, los conceptos, los métodos y los criterios de análisis propios del área. Diferenciá escuelas, modelos o marcos teóricos cuando corresponda; no mezcles disciplinas ni atribuyas consensos donde existan debates."
+    ].filter(Boolean).join("\\n");
+  }
+
   function buildDirect() {
     const { t, rules, formats, style } = blocks();
     const out = [];
-    out.push(`Actuá como ${t.role}.`);
+    out.push(expertRole(t));
+    const disciplineContext = expertDisciplineContext();
+    if (disciplineContext) out.push("MARCO DISCIPLINAR Y PERFIL\\n" + disciplineContext);
     out.push(`OBJETIVO\n${S.goal.trim() || "[Definí el objetivo del trabajo]"}`);
     out.push(`MATERIALES\n${S.sources.trim() || "[Indicá qué materiales vas a adjuntar]"}\nSi todavía no recibiste los materiales, pedilos y esperá a tenerlos antes de empezar.`);
     out.push(`RESULTADO ESPERADO\n${S.output.trim() || "[Describí cómo debería ser el resultado]"}\nProfundidad: ${S.depth}.`
@@ -210,8 +274,10 @@
     const { t, rules, formats, style } = blocks();
     return `Actuá como especialista en ingeniería de prompts. Tu tarea NO es realizar el trabajo final. Tu única tarea es redactar un PROMPT DEFINITIVO, completo y listo para copiar, que otra IA ejecutará después.
 
-TIPO DE TRABAJO: ${t.label} (rol sugerido para la IA ejecutora: ${t.role})
-
+TIPO DE TRABAJO: ${t.label}
+ROL Y ESPECIALIZACIÓN SUGERIDOS PARA LA IA EJECUTORA:
+${expertRole(t)}
+${expertDisciplineContext() ? "MARCO DISCIPLINAR:\\n" + expertDisciplineContext() + "\\n" : ""}
 OBJETIVO DEL TRABAJO FINAL:
 ${S.goal.trim() || "[El usuario todavía no definió el objetivo]"}
 
@@ -233,7 +299,7 @@ ${S.useLayout && window.DOCULAB_GET_MODEL && window.DOCULAB_GET_MODEL(S.layoutId
 
 INSTRUCCIONES PARA VOS, DISEÑADOR DEL PROMPT:
 1. Convertí el brief en instrucciones operativas, precisas y sin ambigüedades.
-2. Definí el rol de la IA ejecutora, el objetivo, el procedimiento para cada material y cómo integrar las fuentes.
+2. Definí el rol de la IA ejecutora a partir de la disciplina, la especialidad y el perfil profesional elegidos; después precisá el objetivo, el procedimiento para cada material y cómo integrar las fuentes.
 3. Establecé una jerarquía explícita entre fuentes cuando corresponda; indicá qué hacer ante contradicciones, omisiones o información ilegible.
 4. Indicá cómo organizar el resultado, qué nivel de desarrollo usar y qué errores evitar.
 5. Respetá el tono, las reglas y el formato pedidos, y traducilos a instrucciones concretas.
@@ -339,6 +405,12 @@ Devolvé únicamente el PROMPT DEFINITIVO, listo para copiar y usar, sin introdu
     update();
   });
   const bind = (sel, key, parse) => $(sel).addEventListener("input", ev => { S[key] = parse ? parse(ev.target.value) : ev.target.value; if (key === "formality") syncFields(); update(); });
+  bind("#plDiscipline", "discipline"); bind("#plSpecialty", "specialty"); bind("#plCustomExpertProfile", "customExpertProfile");
+  $("#plExpertProfile").addEventListener("change", e => {
+    S.expertProfile = e.target.value;
+    $("#plCustomExpertWrap").classList.toggle("hidden", S.expertProfile !== "custom");
+    update();
+  });
   bind("#plGoal", "goal"); bind("#plSources", "sources"); bind("#plOutput", "output");
   bind("#plFewshot", "fewshot"); bind("#plNotes", "notes"); bind("#plVoice", "voice"); bind("#plVariant", "variant");
   bind("#plDepth", "depth"); bind("#plFormality", "formality", Number);
