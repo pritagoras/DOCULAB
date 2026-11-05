@@ -18,7 +18,7 @@ let custom=get("models",[]),projects=get("projects",[]),settings=get("settings",
 const models=()=>{const all=[...DEFAULT_MODELS,...custom,...get("templates",[]).map(t=>({...t,prompt:[t.instructions,...(t.components||[]).filter(c=>c.enabled).map(c=>c.instruction)].filter(Boolean).join("\n\n"),structure:(t.components||[]).filter(c=>c.enabled).map(c=>c.title).join("; "),custom:true}))];const unique=new Map();all.forEach(m=>unique.set(m.id,m));return [...unique.values()]},esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 window.DOCULAB_GET_MODEL=id=>models().find(m=>m.id===id)||null;
 function toast(s){let t=$("#toast");t.textContent=s;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
-function go(n){$$(".view").forEach(x=>x.classList.toggle("active",x.id==="view-"+n));$$(".nav-item[data-view]").forEach(x=>{const on=x.dataset.view===n;x.classList.toggle("active",on);on?x.setAttribute("aria-current","page"):x.removeAttribute("aria-current")});$("#crumb").textContent=({library:"Biblioteca",studio:"Crear documento",builder:"Constructor de modelos",projects:"Mis proyectos",promptlab:"Diseñador de prompts",settings:"Configuración"})[n];$("#sidebar").classList.remove("open");if(n==="projects")renderProjects();if(n==="library")renderLibrary();window.scrollTo(0,0)}
+function go(n){$$(".view").forEach(x=>x.classList.toggle("active",x.id==="view-"+n));$$(".nav-item[data-view]").forEach(x=>{const on=x.dataset.view===n;x.classList.toggle("active",on);on?x.setAttribute("aria-current","page"):x.removeAttribute("aria-current")});$("#crumb").textContent=({library:"Biblioteca",studio:"Crear documento",builder:"Constructor de modelos",projects:"Mis proyectos",promptlab:"Generador de prompts",settings:"Configuración"})[n];$("#sidebar").classList.remove("open");if(n==="projects")renderProjects();if(n==="library")renderLibrary();window.scrollTo(0,0)}
 function renderLibrary(){let q=$("#searchInput").value.toLowerCase(),cat=$("#categoryFilter").value,sort=$("#sortFilter").value;let a=models().filter(m=>(cat==="all"||m.category===cat)&&[m.name,m.category,m.description].join(" ").toLowerCase().includes(q));if(sort==="az")a.sort((x,y)=>x.name.localeCompare(y.name));else if(sort==="newest")a.sort((x,y)=>(Date.parse(y.updated)||0)-(Date.parse(x.updated)||0));$("#modelGrid").innerHTML=a.map(m=>'<article class="model-card"><div class="card-top"><span class="model-icon">▤</span><span class="tag">'+esc(m.category)+'</span></div><h3>'+esc(m.name)+'</h3><p>'+esc(m.description)+'</p><div class="card-bottom"><button class="text-button" data-model="'+esc(m.id)+'">Ver preview ↗</button><button class="text-button" data-edit-model="'+esc(m.id)+'">Editar</button></div></article>').join("");$("#resultCount").textContent=a.length+" modelos";$("#emptyLibrary").classList.toggle("hidden",!!a.length);$("#statModels").textContent=models().length;$("#statCustom").textContent=custom.length;$("#statProjects").textContent=projects.length;let cats=[...new Set(models().map(x=>x.category))].sort(),old=cat;$("#categoryFilter").innerHTML='<option value="all">Todas las categorías</option>'+cats.map(c=>'<option>'+esc(c)+'</option>').join("");$("#categoryFilter").value=cats.includes(old)?old:"all"}
 function renderSelect(){let s=$("#studioModel");s.innerHTML=models().map(m=>'<option value="'+esc(m.id)+'">'+esc(m.name)+'</option>').join("");s.value=activeId}
 function editModel(id){
@@ -60,66 +60,161 @@ function showModel(id){let m=models().find(x=>x.id===id);if(!m)return;activeId=i
 function copy(s){navigator.clipboard?.writeText(s).then(()=>toast("Copiado")).catch(()=>toast("No se pudo copiar"))}
 
 function promptLabBrief(){
- const fields={goal:$("#promptGoal").value.trim(),sources:$("#promptSources").value.trim(),output:$("#promptOutputSpec").value.trim(),depth:$("#promptDepth").value,tone:$("#promptTone").value,rules:$("#promptRules").value.trim()};
- return fields;
+ return {
+  type:$("#promptType").value,
+  goal:$("#promptGoal").value.trim(),
+  sources:$("#promptSources").value.trim(),
+  audience:$("#promptAudience").value.trim(),
+  output:$("#promptOutputSpec").value.trim(),
+  depth:$("#promptDepth").value,
+  tone:$("#promptTone").value,
+  rules:$("#promptRules").value.trim()
+ };
 }
-function promptDesignerInstruction(){
+function promptTypeInstructions(type){
+ const types={
+  general:{role:"especialista en la materia y diseñador de soluciones rigurosas",guidance:"Resuelve el encargo con un procedimiento ordenado. Identifica las decisiones importantes antes de producir el resultado."},
+  study:{role:"docente universitario y especialista en diseño de materiales de aprendizaje",guidance:"Organizá el contenido para favorecer comprensión y estudio. Diferenciá definiciones, mecanismos, relaciones, ejemplos y precisiones; señalá los puntos que suelen confundirse sin inventar exigencias de evaluación."},
+  summary:{role:"editor académico especializado en síntesis y organización conceptual",guidance:"Condensá el material sin borrar distinciones necesarias. Priorizá ideas centrales, definiciones, argumentos y relaciones; evitá repetir información y no conviertas una síntesis en una enumeración superficial."},
+  analysis:{role:"analista especializado en lectura crítica y reconstrucción conceptual",guidance:"Identificá el problema, las tesis, los argumentos, los conceptos, los supuestos y las tensiones relevantes. Diferenciá lo que sostiene la fuente de tu propia interpretación."},
+  comparison:{role:"especialista en análisis comparativo",guidance:"Definí criterios de comparación equivalentes, distinguí semejanzas y diferencias reales y evitá forzar simetrías. Explicá los límites de la comparación cuando corresponda."},
+  questions:{role:"especialista en evaluación y diseño de preguntas",guidance:"Diseñá preguntas variadas y no redundantes. Cuando corresponda, incluí una única respuesta correcta, distractores plausibles, clave y justificación basada en las fuentes."},
+  research:{role:"asistente de investigación con criterios de rigor metodológico",guidance:"Delimitá la pregunta, el alcance y el tipo de evidencia. Diferenciá hechos documentados, interpretaciones e hipótesis; no presentes afirmaciones sin respaldo como si fueran verificadas."},
+  writing:{role:"editor y redactor académico",guidance:"Construí un texto coherente, con progresión argumental y terminología consistente. Evitá relleno, afirmaciones grandilocuentes y referencias que no estén disponibles."},
+  document:{role:"diseñador editorial y arquitecto de documentos",guidance:"Definí una jerarquía clara de títulos, secciones y niveles de lectura. Priorizá legibilidad, consistencia, economía visual y correspondencia entre estructura y contenido."},
+  code:{role:"ingeniero de software senior especializado en implementación y revisión técnica",guidance:"Antes de proponer cambios, comprendé la estructura y las dependencias existentes. Conservá las funciones no relacionadas, evitá duplicar lógica y especificá cómo verificar el resultado con pruebas concretas."}
+ };
+ return types[type]||types.general;
+}
+function buildPromptFromBrief(){
  const f=promptLabBrief();
- return `Actuá como especialista en ingeniería de prompts y diseño de instrucciones para modelos de lenguaje. Tu tarea NO es realizar el trabajo final ni producir el resumen. Tu única tarea es redactar un PROMPT DEFINITIVO, completo y listo para copiar, que otra IA ejecutará posteriormente.
-
-OBJETIVO DEL TRABAJO FINAL:
-${f.goal||"[El usuario todavía no definió el objetivo]"}
-
-MATERIALES QUE RECIBIRÁ LA IA EJECUTORA:
-${f.sources||"[Materiales por especificar]"}
-
-RESULTADO ESPERADO:
-${f.output||"[Formato y contenido por especificar]"}
-
-PROFUNDIDAD: ${f.depth}
-ESTILO: ${f.tone}
-
-REGLAS Y PRIORIDADES:
-${f.rules||"No inventar información; distinguir lo que está respaldado por las fuentes de lo que no."}
-
-INSTRUCCIONES PARA VOS, DISEÑADOR DEL PROMPT:
-1. Convertí el brief en instrucciones operativas, precisas y sin ambigüedades.
-2. Definí el rol de la IA ejecutora, el objetivo, el procedimiento de análisis de cada material y cómo integrar las fuentes.
-3. Establecé una jerarquía explícita entre fuentes cuando corresponda; indicá qué hacer ante contradicciones, omisiones o información ilegible.
-4. Indicá cómo organizar el resultado, qué nivel de desarrollo usar y qué errores evitar.
-5. Incluí controles de fidelidad: no inventar datos, autores, conceptos, citas ni explicaciones; señalar incertidumbres y vacíos.
-6. El prompt debe ser autónomo: la persona podrá pegarlo en otra conversación y adjuntar allí los materiales.
-7. No supongas que la IA ya tiene acceso a los archivos. Indicá que debe esperar a que se adjunten o proporcionen.
-8. No incluyas el resultado final ni empieces a resumir. No expliques tu proceso.
-9. Si falta un dato realmente imprescindible, incorporá una instrucción razonable o una pregunta breve dentro del prompt, sin bloquear innecesariamente su utilidad.
-
-ENTREGA:
-Devolvé únicamente el PROMPT DEFINITIVO, listo para copiar y usar. No devuelvas un metaprompt, análisis, introducción ni comentarios adicionales.`;
+ if(!f.goal)return "";
+ const config=promptTypeInstructions(f.type);
+ const materials=f.sources
+  ? "El usuario proporcionará estos materiales:\n"+f.sources+"\nNo afirmes haberlos leído hasta recibirlos."
+  : "Usá únicamente los materiales que el usuario adjunte o pegue después de enviar este prompt. No presupongas que ya tenés acceso a archivos o enlaces. Si no se proporcionó material suficiente, solicitá lo necesario antes de empezar.";
+ const audience=f.audience||"Adaptá el nivel de explicación al objetivo y al material efectivamente proporcionado. No supongas conocimientos previos específicos sin fundamento.";
+ const expected=f.output||"Entregá el resultado más útil y coherente con el objetivo indicado. Elegí una estructura clara y explicá las decisiones importantes solo cuando ayuden al resultado.";
+ const rules=f.rules||"No inventes información, datos, citas, autores, bibliografía ni resultados. Señalá de forma explícita cualquier vacío, contradicción o incertidumbre relevante.";
+ return [
+  "ROL Y ENFOQUE\nActuá como "+config.role+".",
+  "OBJETIVO\n"+f.goal,
+  "CONTEXTO Y DESTINATARIO\n"+audience,
+  "MATERIALES DE ENTRADA\n"+materials,
+  "RESULTADO ESPERADO\n"+expected,
+  "NIVEL DE DESARROLLO\n"+f.depth+".",
+  "ESTILO Y TONO\n"+f.tone+". Mantené un lenguaje claro, preciso y consistente con el tema.",
+  "PROCEDIMIENTO DE TRABAJO\n1. Analizá el objetivo y los materiales antes de redactar.\n2. Identificá los conceptos, datos o decisiones que resultan centrales para la tarea.\n3. Organizá el trabajo en una secuencia lógica y evitá repeticiones.\n4. Desarrollá cada parte con el nivel de detalle solicitado.\n5. Revisá que el resultado responda al objetivo y respete el formato esperado.\n"+config.guidance,
+  "FIDELIDAD Y CONTROL DE CALIDAD\n- No inventes datos, citas, referencias, conceptos ni resultados.\n- No atribuyas a una fuente afirmaciones que no contiene.\n- Respetá la jerarquía entre fuentes que indique el usuario. Si no se especifica, no impongas una prioridad arbitraria.\n- Si dos fuentes se contradicen, exponé la diferencia en lugar de ocultarla.\n- Distinguí información respaldada, inferencias y ejemplos propios.\n- Si algo no puede determinarse con el material disponible, indicá el límite con claridad.",
+  "REGLAS ESPECÍFICAS\n"+rules,
+  "INTERACCIÓN Y ENTREGA\nSi falta un dato imprescindible, formulá preguntas concretas antes de avanzar; si la omisión no impide trabajar, adoptá una solución razonable y explicitá el supuesto. Entregá el resultado solicitado sin introducir explicaciones sobre estas instrucciones ni afirmar que utilizaste materiales que todavía no recibiste."
+ ].join("\n\n");
+}
+function promptDesignerInstruction(basePrompt){
+ return [
+  "Actuá como especialista senior en ingeniería de prompts.",
+  "Tu única tarea es revisar y mejorar el prompt base que aparece al final. No ejecutes la tarea descrita en él ni produzcas su resultado.",
+  "Hacé que las instrucciones sean específicas, autónomas, ordenadas y fáciles de seguir. Conservá la intención, el alcance, las prioridades y las restricciones del usuario. Eliminá ambigüedades y redundancias, pero no agregues requisitos temáticos que el usuario no haya pedido.",
+  "Asegurá que el prompt indique qué hacer con materiales ausentes, contradicciones, incertidumbres y datos no verificables.",
+  "Devolvé únicamente el prompt final optimizado, listo para copiar y utilizar en otra conversación. No agregues introducciones, comentarios ni explicaciones.",
+  "PROMPT BASE:",
+  basePrompt
+ ].join("\n\n");
+}
+function updatePromptOutputMeta(){
+ const value=$("#promptLabOutput").value||"";
+ const words=value.trim()?value.trim().split(/\s+/).length:0;
+ $("#promptOutputMeta").textContent=words.toLocaleString("es-AR")+" palabras · "+value.length.toLocaleString("es-AR")+" caracteres";
 }
 async function designPromptLab(){
- const instruction=promptDesignerInstruction(),provider=$("#aiProvider").value,button=$("#designPrompt");
- button.disabled=true;button.textContent="Diseñando…";
+ const basePrompt=buildPromptFromBrief(),provider=$("#aiProvider").value,button=$("#designPrompt");
+ if(!basePrompt){
+  $("#promptLabStatus").textContent="Primero describí qué querés conseguir para poder construir el prompt.";
+  $("#promptGoal").focus();
+  return;
+ }
+ $("#promptLabOutput").value=basePrompt;
+ updatePromptOutputMeta();
+ button.disabled=true;
+ button.innerHTML="<span>…</span> Generando";
  try{
   if(provider==="none"){
-   $("#promptLabOutput").value=instruction;
-   $("#promptLabStatus").textContent="Metaprompt preparado. Copialo en una IA externa: esa IA te devolverá el prompt definitivo, no el resumen.";
+   $("#promptLabStatus").textContent="Prompt completo generado en modo local. No necesitás conectar una IA para utilizarlo; podés editarlo y copiarlo directamente.";
    return;
   }
   const endpoint=$("#aiEndpoint").value.replace(/\/$/,"");
-  const r=await fetch(endpoint+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({provider,model:$("#aiModel").value,prompt:instruction,api_key:""})});
+  const r=await fetch(endpoint+"/api/generate",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({provider,model:$("#aiModel").value,prompt:promptDesignerInstruction(basePrompt),api_key:""})
+  });
   if(!r.ok)throw Error("HTTP "+r.status);
   const data=await r.json();
-  $("#promptLabOutput").value=data.text||data.response||"";
-  if(!$("#promptLabOutput").value)throw Error("El proveedor no devolvió texto.");
-  $("#promptLabStatus").textContent="Prompt definitivo generado. Revisalo y copialo; todavía no se ejecutó el resumen.";
+  const refined=String(data.text||data.response||"").trim();
+  if(!refined)throw Error("El proveedor no devolvió texto.");
+  $("#promptLabOutput").value=refined;
+  updatePromptOutputMeta();
+  $("#promptLabStatus").textContent="Prompt optimizado con "+(data.model||$("#aiModel").value||provider)+". Revisalo y editá cualquier detalle antes de copiarlo.";
   renderObservedUsage(data);
- }catch(e){$("#promptLabStatus").textContent="No se pudo generar: "+e.message+" Podés cambiar a modo manual y copiar el metaprompt."}
- finally{button.disabled=false;button.textContent="Diseñar el prompt"}
+ }catch(e){
+  $("#promptLabOutput").value=basePrompt;
+  updatePromptOutputMeta();
+  $("#promptLabStatus").textContent="No se pudo conectar con la IA ("+e.message+"). Se conservó el prompt completo generado localmente.";
+ }finally{
+  button.disabled=false;
+  button.innerHTML="<span>✳</span> Generar prompt";
+ }
 }
 function clearPromptLab(){
- ["promptGoal","promptSources","promptOutputSpec","promptRules","promptLabOutput"].forEach(id=>$("#"+id).value="");
- $("#promptDepth").value="Intermedia";$("#promptTone").value="Académico claro";
- $("#promptLabStatus").textContent="Brief limpio. Definí el trabajo que querés convertir en un prompt.";
+ ["promptGoal","promptSources","promptAudience","promptOutputSpec","promptRules","promptLabOutput"].forEach(id=>$("#"+id).value="");
+ $("#promptType").value="general";
+ $("#promptDepth").value="Intermedia";
+ $("#promptTone").value="Académico claro";
+ $("#promptLabStatus").textContent="Campos limpios. Describí el encargo o elegí una estructura de inicio.";
+ updatePromptOutputMeta();
+}
+function applyPromptPreset(key){
+ const presets={
+  study:{
+   promptType:"study",
+   promptGoal:"Crear una guía de estudio completa y rigurosa para preparar un examen. Explicar los temas y sus relaciones, no limitarse a enumerar datos.",
+   promptSources:"Transcripción de las clases, diapositivas del profesor y bibliografía indicada para la materia. Respetar cualquier jerarquía entre estos materiales que se detalle aquí.",
+   promptAudience:"Estudiante universitario que necesita comprender y repasar los contenidos para una evaluación.",
+   promptOutputSpec:"Guía organizada por unidades y temas, con objetivo de estudio, mapa conceptual, desarrollo de conceptos, relaciones entre temas, ejemplos pertinentes y precisiones importantes.",
+   promptRules:"Conservar las distinciones conceptuales. No inventar información ni referencias. Señalar contradicciones o vacíos entre los materiales. Eliminar repeticiones sin perder contenido evaluable."
+  },
+  summary:{
+   promptType:"summary",
+   promptGoal:"Elaborar un resumen desarrollado que reduzca la extensión del material sin perder sus ideas, conceptos, argumentos ni relaciones esenciales.",
+   promptSources:"Apuntes, transcripciones de clase, diapositivas o bibliografía que se adjuntarán al iniciar la conversación.",
+   promptAudience:"Estudiante que necesita estudiar el tema y recuperar sus ideas centrales con precisión.",
+   promptOutputSpec:"Texto organizado por títulos y subtítulos, con definiciones, explicaciones, relaciones y una síntesis final.",
+   promptRules:"No convertir el resumen en una lista superficial. Eliminar redundancias, mantener matices y no agregar información que no esté respaldada."
+  },
+  comparison:{
+   promptType:"comparison",
+   promptGoal:"Comparar los elementos indicados para identificar sus semejanzas, diferencias, relaciones y límites.",
+   promptSources:"Textos, apuntes o documentos que desarrollan los conceptos, autores, teorías o procesos que se van a comparar.",
+   promptAudience:"Estudiante o lector que necesita comprender con precisión qué distingue a cada elemento.",
+   promptOutputSpec:"Cuadro comparativo con criterios equivalentes, seguido de una explicación de las semejanzas, diferencias relevantes y límites de la comparación.",
+   promptRules:"No forzar equivalencias. No atribuir a un autor ideas de otro. Fundamentar cada diferencia en el material proporcionado."
+  },
+  questions:{
+   promptType:"questions",
+   promptGoal:"Crear un banco amplio de preguntas para evaluar la comprensión y aplicación de los contenidos, cubriendo de manera equilibrada los temas del material.",
+   promptSources:"Programa, apuntes, transcripciones, diapositivas y bibliografía que se adjuntarán para construir las preguntas.",
+   promptAudience:"Estudiante universitario que prepara una evaluación y necesita detectar lagunas de comprensión.",
+   promptOutputSpec:"Preguntas variadas por tema y dificultad, con respuesta correcta y justificación. Incluir distractores plausibles cuando se utilice opción múltiple.",
+   promptRules:"Evitar duplicados, ambigüedades y preguntas cuya respuesta no esté sustentada por las fuentes. No revelar la respuesta antes de que el estudiante intente resolver la pregunta si se solicita modo práctica."
+  }
+ };
+ const preset=presets[key];
+ if(!preset)return;
+ Object.entries(preset).forEach(([id,value])=>{const field=$("#"+id);if(field)field.value=value});
+ $("#promptLabOutput").value="";
+ updatePromptOutputMeta();
+ $("#promptLabStatus").textContent="Estructura cargada. Revisá y personalizá los campos antes de generar el prompt.";
+ $("#promptGoal").focus();
 }
 function promptText(){let m=models().find(x=>x.id===$("#studioModel").value)||models()[0];return m.prompt+"\n\nTÍTULO: "+($("#docTitle").value.trim()||m.name)+"\nPROFUNDIDAD: "+$("#depth").value+"\nESTILO: "+$("#docStyle").value+"\nESTRUCTURA: "+m.structure+"\nINDICACIONES: "+($("#extraInstructions").value||"Ninguna.")+"\n\nFUENTES:\n"+($("#sourceText").value.trim()||"[Sin material de entrada]")+"\n\nNo inventes información. Si falta un dato, indícalo. Entrega un documento bien jerarquizado.";}
 function tab(t){$$(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===t));$("#promptOutput").classList.toggle("hidden",t!=="prompt");$("#documentOutput").classList.toggle("hidden",t!=="document")}
@@ -224,4 +319,4 @@ async function refreshModels(){
 async function refreshLocalKeyStatus(){const el=$("#localKeyStatus");if(!el)return;try{const r=await fetch($("#aiEndpoint").value.replace(/\/+$/,"")+"/api/settings");if(!r.ok)throw Error();const d=await r.json();const p=$("#aiProvider").value;el.textContent=p==="openai"?(d.openai_configured?"Clave de OpenAI guardada en esta PC.":"No hay una clave de OpenAI guardada.") :p==="gemini"?(d.gemini_configured?"Clave de Gemini guardada en esta PC.":"No hay una clave de Gemini guardada.") :"Ollama no necesita clave API."}catch{el.textContent="Iniciá DOCULAB con INICIAR_DOCULAB.bat para administrar claves locales."}}
 function updateConnection(){const p=settings.provider,names={none:"Modo navegador",ollama:"Ollama local",openai:"OpenAI API",gemini:"Google Gemini"};$("#connectionLabel").textContent=names[p]||"Modo navegador";$("#connectionSub").textContent=p==="none"||!names[p]?"Almacenamiento local":(settings.model||"Modelo sin definir");$("#connectionDot").classList.toggle("off",p==="none"||!names[p])}
 function init(){renderLibrary();renderSelect();updateConnection();$("#aiEndpoint").value=settings.endpoint;$("#aiModel").value=settings.model;$("#aiKey").value="";updateProviderUI(settings.provider||"none",false);refreshLocalKeyStatus()}
-$$(".nav-item[data-view]").forEach(b=>b.onclick=()=>go(b.dataset.view));$$("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));$("#mobileMenu").onclick=()=>$("#sidebar").classList.toggle("open");$("#searchInput").oninput=renderLibrary;$("#categoryFilter").onchange=renderLibrary;$("#sortFilter").onchange=renderLibrary;$("#modelGrid").onclick=e=>{let edit=e.target.closest("[data-edit-model]"),view=e.target.closest("[data-model]");if(edit)editModel(edit.dataset.editModel);else if(view)showModel(view.dataset.model)};$("#newModelTop").onclick=()=>go("builder");$("#closeModal").onclick=()=>$("#modelModal").classList.add("hidden");$("#modelModal").onclick=e=>{if(e.target.id==="modelModal")e.currentTarget.classList.add("hidden")};$("#studioModel").onchange=e=>activeId=e.target.value;$("#buildPrompt").onclick=build;$("#generateDoc").onclick=generate;$("#designPrompt").onclick=designPromptLab;$("#clearPromptLab").onclick=clearPromptLab;$("#copyPromptLab").onclick=()=>copy($("#promptLabOutput").value);$("#usePromptInStudio").onclick=()=>{go("studio");$("#promptOutput").value=$("#promptLabOutput").value;tab("prompt");$("#studioStatus").textContent="Prompt transferido desde el Diseñador de prompts."};$("#copyPrompt").onclick=()=>copy($("#promptOutput").value||build());$("#saveProject").onclick=saveProject;$$(".tab").forEach(b=>b.onclick=()=>tab(b.dataset.tab));$("#projectList").onclick=e=>{let o=e.target.closest("[data-open]"),d=e.target.closest("[data-del]");if(o){let p=projects.find(x=>x.id===o.dataset.open);currentId=p.id;renderSelect();$("#studioModel").value=p.modelId;$("#docTitle").value=p.title;$("#promptOutput").value=p.prompt;$("#documentOutput").value=p.document;tab(p.document?"document":"prompt");go("studio")}if(d){projects=projects.filter(x=>x.id!==d.dataset.del);put("projects",projects);renderProjects()}};$("#exportLibrary").onclick=exportLibrary;$("#importLibrary").onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);custom=[...(d.models||[]),...custom];projects=[...(d.projects||[]),...projects];put("models",custom);put("projects",projects);init();toast("Importación completa")}catch{toast("JSON inválido")}};r.readAsText(f)};$("#exportHtml").onclick=()=>{if(!$("#structuredEditor").classList.contains("hidden")){$("#structuredExport").click();return}download("doculab.html","<!doctype html><meta charset=utf-8><title>DOCULAB</title><h1>"+esc($("#docTitle").value)+"</h1><pre>"+esc($("#documentOutput").value)+"</pre>","text/html")};$("#printPdf").onclick=()=>{if(!$("#structuredEditor").classList.contains("hidden")){$("#structuredPrint").click();return}tab("document");window.print()};$("#saveSettings").onclick=()=>{settings={provider:$("#aiProvider").value,endpoint:$("#aiEndpoint").value,model:$("#aiModel").value};put("settings",settings);updateConnection();toast("Configuración guardada")};$("#saveLocalKey").onclick=async()=>{const provider=$("#aiProvider").value,key=$("#aiKey").value.trim();if(!["openai","gemini"].includes(provider)){$("#localKeyStatus").textContent="Elegí OpenAI o Gemini para guardar una clave.";return}if(!key){$("#localKeyStatus").textContent="Pegá una clave API antes de guardarla.";return}const button=$("#saveLocalKey");button.disabled=true;$("#localKeyStatus").textContent="Guardando la clave en esta PC…";try{const r=await fetch($("#aiEndpoint").value.replace(/\/+$/,"")+"/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({provider,api_key:key})});const d=await r.json();if(!r.ok)throw Error(d.detail||"No se pudo guardar");$("#aiKey").value="";$("#localKeyStatus").textContent="Clave guardada localmente en local_server/.env. No se muestra ni se envía desde el navegador en las próximas consultas.";toast("Clave guardada en este equipo")}catch(e){$("#localKeyStatus").textContent="No se pudo guardar: "+e.message}finally{button.disabled=false}};$("#aiProvider").onchange=()=>updateProviderUI($("#aiProvider").value);$$(".provider-card").forEach(card=>card.onclick=()=>updateProviderUI(card.dataset.provider));$("#refreshModels").onclick=refreshModels;$("#aiModel").oninput=renderModelInfo;$("#aiEndpoint").onchange=()=>{if($("#aiProvider").value!=="none")refreshModels()};$("#themeToggle").onclick=()=>applyTheme(document.documentElement.dataset.theme==="dark"?"light":"dark");applyTheme(document.documentElement.dataset.theme||"light");$("#testConnection").onclick=async()=>{const provider=$("#aiProvider").value;if(provider==="none"){$("#connectionMessage").textContent="Elegí primero un proveedor.";return}$("#connectionMessage").textContent="Probando proveedor y modelo…";try{let r=await fetch($("#aiEndpoint").value.replace(/\/$/,"")+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({provider,model:$("#aiModel").value,prompt:"Respondé únicamente: DOCULAB OK",api_key:""})});let d=await r.json();if(!r.ok)throw Error(d.detail||"HTTP "+r.status);$("#connectionMessage").textContent="Conexión correcta · "+(d.provider||provider)+" · "+(d.model||$("#aiModel").value);renderObservedUsage(d);$("#aiProviderDot").classList.remove("off");$("#aiProviderState").textContent="Conexión verificada"}catch(e){$("#connectionMessage").textContent="Error de conexión: "+e.message;$("#aiProviderDot").classList.add("off");$("#aiProviderState").textContent="No conectado"}};$("#clearData").onclick=()=>{if(confirm("¿Eliminar los datos locales?")){localStorage.removeItem("doculab_models");localStorage.removeItem("doculab_projects");localStorage.removeItem("doculab_templates");custom=[];projects=[];init();renderProjects();window.dispatchEvent(new CustomEvent("doculab:templates-changed"))}};document.addEventListener("keydown",e=>{if(e.key==="Escape")$("#modelModal").classList.add("hidden");if(e.metaKey||e.ctrlKey||e.altKey||/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||""))return;const v={1:"library",2:"studio",3:"builder",4:"projects"}[e.key];if(v)go(v)});document.addEventListener("click",e=>{if(!e.target.closest("#sidebar,#mobileMenu"))$("#sidebar").classList.remove("open")});window.addEventListener("doculab:templates-changed",()=>{renderLibrary();renderSelect()});init();if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
+$$(".nav-item[data-view]").forEach(b=>b.onclick=()=>go(b.dataset.view));$$("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));$("#mobileMenu").onclick=()=>$("#sidebar").classList.toggle("open");$("#searchInput").oninput=renderLibrary;$("#categoryFilter").onchange=renderLibrary;$("#sortFilter").onchange=renderLibrary;$("#modelGrid").onclick=e=>{let edit=e.target.closest("[data-edit-model]"),view=e.target.closest("[data-model]");if(edit)editModel(edit.dataset.editModel);else if(view)showModel(view.dataset.model)};$("#newModelTop").onclick=()=>go("builder");$("#closeModal").onclick=()=>$("#modelModal").classList.add("hidden");$("#modelModal").onclick=e=>{if(e.target.id==="modelModal")e.currentTarget.classList.add("hidden")};$("#studioModel").onchange=e=>activeId=e.target.value;$("#buildPrompt").onclick=build;$("#generateDoc").onclick=generate;$("#designPrompt").onclick=designPromptLab;$("[data-preset]").forEach(b=>b.onclick=()=>applyPromptPreset(b.dataset.preset));$("#promptLabOutput").addEventListener("input",updatePromptOutputMeta);updatePromptOutputMeta();$("#clearPromptLab").onclick=clearPromptLab;$("#copyPromptLab").onclick=()=>copy($("#promptLabOutput").value);$("#usePromptInStudio").onclick=()=>{go("studio");$("#promptOutput").value=$("#promptLabOutput").value;tab("prompt");$("#studioStatus").textContent="Prompt transferido desde el Diseñador de prompts."};$("#copyPrompt").onclick=()=>copy($("#promptOutput").value||build());$("#saveProject").onclick=saveProject;$$(".tab").forEach(b=>b.onclick=()=>tab(b.dataset.tab));$("#projectList").onclick=e=>{let o=e.target.closest("[data-open]"),d=e.target.closest("[data-del]");if(o){let p=projects.find(x=>x.id===o.dataset.open);currentId=p.id;renderSelect();$("#studioModel").value=p.modelId;$("#docTitle").value=p.title;$("#promptOutput").value=p.prompt;$("#documentOutput").value=p.document;tab(p.document?"document":"prompt");go("studio")}if(d){projects=projects.filter(x=>x.id!==d.dataset.del);put("projects",projects);renderProjects()}};$("#exportLibrary").onclick=exportLibrary;$("#importLibrary").onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);custom=[...(d.models||[]),...custom];projects=[...(d.projects||[]),...projects];put("models",custom);put("projects",projects);init();toast("Importación completa")}catch{toast("JSON inválido")}};r.readAsText(f)};$("#exportHtml").onclick=()=>{if(!$("#structuredEditor").classList.contains("hidden")){$("#structuredExport").click();return}download("doculab.html","<!doctype html><meta charset=utf-8><title>DOCULAB</title><h1>"+esc($("#docTitle").value)+"</h1><pre>"+esc($("#documentOutput").value)+"</pre>","text/html")};$("#printPdf").onclick=()=>{if(!$("#structuredEditor").classList.contains("hidden")){$("#structuredPrint").click();return}tab("document");window.print()};$("#saveSettings").onclick=()=>{settings={provider:$("#aiProvider").value,endpoint:$("#aiEndpoint").value,model:$("#aiModel").value};put("settings",settings);updateConnection();toast("Configuración guardada")};$("#saveLocalKey").onclick=async()=>{const provider=$("#aiProvider").value,key=$("#aiKey").value.trim();if(!["openai","gemini"].includes(provider)){$("#localKeyStatus").textContent="Elegí OpenAI o Gemini para guardar una clave.";return}if(!key){$("#localKeyStatus").textContent="Pegá una clave API antes de guardarla.";return}const button=$("#saveLocalKey");button.disabled=true;$("#localKeyStatus").textContent="Guardando la clave en esta PC…";try{const r=await fetch($("#aiEndpoint").value.replace(/\/+$/,"")+"/api/settings",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({provider,api_key:key})});const d=await r.json();if(!r.ok)throw Error(d.detail||"No se pudo guardar");$("#aiKey").value="";$("#localKeyStatus").textContent="Clave guardada localmente en local_server/.env. No se muestra ni se envía desde el navegador en las próximas consultas.";toast("Clave guardada en este equipo")}catch(e){$("#localKeyStatus").textContent="No se pudo guardar: "+e.message}finally{button.disabled=false}};$("#aiProvider").onchange=()=>updateProviderUI($("#aiProvider").value);$$(".provider-card").forEach(card=>card.onclick=()=>updateProviderUI(card.dataset.provider));$("#refreshModels").onclick=refreshModels;$("#aiModel").oninput=renderModelInfo;$("#aiEndpoint").onchange=()=>{if($("#aiProvider").value!=="none")refreshModels()};$("#themeToggle").onclick=()=>applyTheme(document.documentElement.dataset.theme==="dark"?"light":"dark");applyTheme(document.documentElement.dataset.theme||"light");$("#testConnection").onclick=async()=>{const provider=$("#aiProvider").value;if(provider==="none"){$("#connectionMessage").textContent="Elegí primero un proveedor.";return}$("#connectionMessage").textContent="Probando proveedor y modelo…";try{let r=await fetch($("#aiEndpoint").value.replace(/\/$/,"")+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({provider,model:$("#aiModel").value,prompt:"Respondé únicamente: DOCULAB OK",api_key:""})});let d=await r.json();if(!r.ok)throw Error(d.detail||"HTTP "+r.status);$("#connectionMessage").textContent="Conexión correcta · "+(d.provider||provider)+" · "+(d.model||$("#aiModel").value);renderObservedUsage(d);$("#aiProviderDot").classList.remove("off");$("#aiProviderState").textContent="Conexión verificada"}catch(e){$("#connectionMessage").textContent="Error de conexión: "+e.message;$("#aiProviderDot").classList.add("off");$("#aiProviderState").textContent="No conectado"}};$("#clearData").onclick=()=>{if(confirm("¿Eliminar los datos locales?")){localStorage.removeItem("doculab_models");localStorage.removeItem("doculab_projects");localStorage.removeItem("doculab_templates");custom=[];projects=[];init();renderProjects();window.dispatchEvent(new CustomEvent("doculab:templates-changed"))}};document.addEventListener("keydown",e=>{if(e.key==="Escape")$("#modelModal").classList.add("hidden");if(e.metaKey||e.ctrlKey||e.altKey||/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||""))return;const v={1:"promptlab",2:"library",3:"studio",4:"builder",5:"projects"}[e.key];if(v)go(v)});document.addEventListener("click",e=>{if(!e.target.closest("#sidebar,#mobileMenu"))$("#sidebar").classList.remove("open")});window.addEventListener("doculab:templates-changed",()=>{renderLibrary();renderSelect()});init();if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
