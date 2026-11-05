@@ -14,8 +14,42 @@ function inline(text){
 function contentBlocks(text){
  const lines=String(text||"").replace(/\r/g,"").split("\n");
  const blocks=[];let paragraph=[],list=[],listType="";
- const flushParagraph=()=>{if(paragraph.length){const raw=paragraph.join(" ").trim();if(raw)blocks.push({kind:"paragraph",html:"<p>"+inline(raw)+"</p>",weight:Math.max(12,Math.ceil(raw.split(/\s+/).length*1.05))});paragraph=[]}};
- const flushList=()=>{if(list.length){const tag=listType==="ordered"?"ol":"ul";blocks.push({kind:"list",html:"<"+tag+">"+list.map(x=>"<li>"+inline(x)+"</li>").join("")+"</"+tag+">",weight:list.length*17});list=[];listType=""}};
+ const flushParagraph=()=>{
+  if(!paragraph.length)return;
+  const raw=paragraph.join(" ").trim();
+  if(raw){
+   const sentences=raw.match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[raw];
+   let chunk=[],count=0;
+   const pushChunk=()=>{
+    if(!chunk.length)return;
+    const part=chunk.join(" ").trim();
+    blocks.push({kind:"paragraph",html:"<p>"+inline(part)+"</p>",weight:Math.max(12,Math.ceil(part.split(/\s+/).length*1.05))});
+    chunk=[];count=0;
+   };
+   for(const sentence of sentences){
+    const words=sentence.trim().split(/\s+/);
+    if(count&&count+words.length>125)pushChunk();
+    if(words.length>150){
+     pushChunk();
+     for(let i=0;i<words.length;i+=125){
+      const part=words.slice(i,i+125).join(" ");
+      blocks.push({kind:"paragraph",html:"<p>"+inline(part)+"</p>",weight:Math.max(12,Math.ceil(part.split(/\s+/).length*1.05))});
+     }
+    }else{chunk.push(sentence.trim());count+=words.length}
+   }
+   pushChunk();
+  }
+  paragraph=[];
+ };
+ const flushList=()=>{
+  if(!list.length)return;
+  const tag=listType==="ordered"?"ol":"ul";
+  for(let i=0;i<list.length;i+=10){
+   const part=list.slice(i,i+10);
+   blocks.push({kind:"list",html:"<"+tag+">"+part.map(x=>"<li>"+inline(x)+"</li>").join("")+"</"+tag+">",weight:part.length*17});
+  }
+  list=[];listType="";
+ };
  for(const raw of lines){
   const line=raw.trim();
   if(!line){flushParagraph();flushList();continue}
@@ -34,7 +68,7 @@ function contentBlocks(text){
  flushParagraph();flushList();
  return blocks;
 }
-function paginate(blocks,maxWords=365){
+function paginate(blocks,maxWords=220){
  const pages=[[]];let used=0;
  for(const block of blocks){
   const weight=block.weight||20;
