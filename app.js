@@ -142,7 +142,7 @@ function buildPromptFromBrief(){
    return "MAQUETA DOCULAB SELECCIONADA: "+selected.name+"\nCategoría: "+(selected.category||"Personalizada")+"\nDescripción: "+(selected.description||"")+
     "\n\nESTRUCTURA OBLIGATORIA (respetá el orden y los títulos):\n"+partText+
     (globalRules?"\n\nINSTRUCCIONES GENERALES DE LA MAQUETA:\n"+globalRules:"")+
-    "\n\nEntregá el contenido con estos títulos y en este orden, listo para trasladarlo al editor de secciones de DOCULAB. No omitas secciones activas; si una no corresponde o no está respaldada por las fuentes, indicalo sin inventar contenido. No afirmes que creaste un PDF: la composición visual A4 se realizará posteriormente dentro de DOCULAB.";
+    "\n\nEntregá el contenido con estos títulos y en este orden, listo para trasladarlo al editor de secciones de DOCULAB. No omitas secciones activas; si una no corresponde o no está respaldada por las fuentes, indicalo sin inventar contenido. Usá encabezados Markdown de nivel 2 (##) para cada título exacto de la maqueta y de nivel 3 para subsecciones; no conviertas los títulos principales en listas numeradas. No afirmes que creaste un PDF: la composición visual A4 se realizará posteriormente dentro de DOCULAB.";
   })()]:[]),
   "REGLAS ESPECÍFICAS\n"+rules,
   "INTERACCIÓN Y ENTREGA\nSi falta un dato imprescindible, formulá preguntas concretas antes de avanzar; si la omisión no impide trabajar, adoptá una solución razonable y explicitá el supuesto. Entregá el resultado solicitado sin introducir explicaciones sobre estas instrucciones ni afirmar que utilizaste materiales que todavía no recibiste."
@@ -263,7 +263,7 @@ function promptText(){
  "ESTILO EDITORIAL: "+$("#docStyle").value,"ESTRUCTURA Y ORDEN OBLIGATORIOS:\n"+structure,
  "INDICACIONES ADICIONALES: "+($("#extraInstructions").value||"Ninguna."),
  "FUENTES:\n"+($("#sourceText").value.trim()||"[Sin material de entrada]"),
- "Desarrollá cada sección de la maqueta sin omitir apartados activos. No inventes información; si falta un dato, señalalo. No alteres el orden ni mezcles secciones."
+ "Desarrollá cada sección de la maqueta sin omitir apartados activos. No inventes información; si falta un dato, señalalo. No alteres el orden ni mezcles secciones. Usá encabezados Markdown ## con los títulos exactos de la maqueta y ### para subsecciones, no listas numeradas para los títulos principales."
  ].join("\n\n");
 }
 function tab(t){$$(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===t));$("#promptOutput").classList.toggle("hidden",t!=="prompt");$("#documentOutputWorkspace").classList.toggle("hidden",t!=="document");if(t==="document")window.DOCULAB_RENDER_OUTPUT_PREVIEW?.()}
