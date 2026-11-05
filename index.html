@@ -50,15 +50,49 @@
         <div class="library-toolbar"><label class="searchbox"><span>⌕</span><input id="searchInput" placeholder="Buscar modelos, categorías o palabras clave..."></label><select id="categoryFilter" aria-label="Filtrar por categoría"><option value="all">Todas las categorías</option></select><select id="sortFilter" aria-label="Ordenar"><option value="featured">Destacados</option><option value="az">Nombre A–Z</option><option value="newest">Más recientes</option></select></div>
         <div class="section-line"><h2>Explorar modelos</h2><span id="resultCount" aria-live="polite">0 modelos</span></div><div class="model-grid" id="modelGrid"></div><div class="empty-state hidden" id="emptyLibrary"><b>No encontramos modelos</b><p>Probá con otra búsqueda o creá tu propia plantilla.</p></div>
       </section>
-      <section class="view" id="view-studio">
-        <div class="page-heading"><div><div class="eyebrow">PRODUCCIÓN DOCUMENTAL</div><h1>Crear documento</h1><p>Elegí un modelo, agregá tus fuentes y prepará el contenido.</p></div></div>
-        <div class="studio-layout"><div class="panel form-panel"><div class="panel-title"><span class="step">01</span><div><h2>Configuración del documento</h2><p>Definí la estructura y el alcance del trabajo.</p></div></div>
-        <label class="field-label">Modelo de partida</label><select id="studioModel"></select><label class="field-label">Título del documento</label><input id="docTitle" placeholder="Ej. Mecanismos de regulación génica"><label class="field-label">Material de entrada</label><textarea id="sourceText" rows="9" placeholder="Pegá aquí apuntes, transcripciones, fragmentos de bibliografía o el contenido que querés organizar..."></textarea><div class="file-note">En esta versión podés pegar texto directamente. La importación y extracción de archivos se ampliará en la siguiente iteración.</div>
-        <div class="two-fields"><div><label class="field-label">Profundidad</label><select id="depth"><option>Sintética</option><option selected>Intermedia</option><option>Profunda</option><option>Exhaustiva</option></select></div><div><label class="field-label">Estilo editorial</label><select id="docStyle"><option>Académico minimalista</option><option>Manual editorial</option><option>Esquemático</option><option>Visual didáctico</option></select></div></div>
-        <label class="field-label">Indicaciones adicionales</label><textarea id="extraInstructions" rows="3" placeholder="Restricciones, prioridades, fuentes permitidas, tono..."></textarea><div class="button-row"><button class="button secondary" id="buildPrompt">Preparar prompt</button><button class="button primary" id="generateDoc">Generar borrador</button></div></div>
-        <div class="panel preview-panel"><div class="panel-title"><span class="step">02</span><div><h2>Área de trabajo</h2><p>Revisá el prompt o editá el documento resultante.</p></div></div><div class="tabbar"><button class="tab active" data-tab="prompt">Prompt ensamblado</button><button class="tab" data-tab="document">Documento</button></div><textarea id="promptOutput" class="editor-area" spellcheck="false" placeholder="El prompt ensamblado aparecerá aquí..."></textarea><textarea id="documentOutput" class="editor-area hidden" placeholder="El borrador aparecerá aquí. Podés editarlo antes de exportar."></textarea><div class="preview-footer"><span id="studioStatus">Listo para comenzar.</span><div><button class="button ghost small" id="copyPrompt">Copiar prompt</button><button class="button primary small" id="saveProject">Guardar proyecto</button></div></div><div class="export-row"><button class="button secondary" id="exportHtml">Exportar HTML</button><button class="button secondary" id="printPdf">Imprimir / Guardar PDF</button><button class="button primary" id="buildStructuredDoc">Editor por secciones</button></div><div id="structuredEditor" class="structured-editor hidden"><div class="structured-toolbar"><div><h3>Contenido del documento</h3><p>Editá cada sección por separado. Los cambios no modifican la plantilla.</p></div><div class="button-row"><button class="button secondary small" id="structuredExport">Exportar HTML</button><button class="button primary small" id="structuredPrint">Imprimir / PDF</button></div></div><div class="structured-layout"><div id="sectionEditors" class="section-editors"></div><div class="document-live-preview-wrap"><div class="preview-meta"><b>Vista de página</b><span>Actualización automática</span></div><div id="documentLivePreview" class="document-live-preview"></div></div></div></div></div></div>
+            <section class="view" id="view-studio">
+        <div class="page-heading studio-page-heading"><div><div class="eyebrow">DOCUMENT STUDIO / PRODUCCIÓN</div><h1>Crear documento</h1><p>Elegí una maqueta, incorporá el material y prepará un documento listo para revisar y exportar.</p></div><span class="studio-format-chip"><i></i> Formato de trabajo A4</span></div>
+        <div class="studio-layout">
+          <div class="panel form-panel studio-form-panel">
+            <div class="panel-title"><span class="step">01</span><div><h2>Configuración del documento</h2><p>La maqueta determina la estructura y las secciones del documento.</p></div></div>
+            <label class="field-label" for="studioModel">Maqueta documental</label>
+            <select id="studioModel"></select>
+            <div class="studio-model-summary" id="studioModelSummary" aria-live="polite"></div>
+            <div class="studio-field-divider"></div>
+            <label class="field-label" for="docTitle">Título del documento</label>
+            <input id="docTitle" placeholder="Ej. Mecanismos de regulación génica">
+            <label class="field-label" for="sourceText">Material de entrada</label>
+            <textarea id="sourceText" rows="9" placeholder="Pegá apuntes, transcripciones, bibliografía o el contenido que querés organizar..."></textarea>
+            <div class="file-note">Podés incorporar el texto generado por otra IA o tus fuentes originales. La estructura final se prepara con la maqueta seleccionada.</div>
+            <div class="two-fields"><div><label class="field-label" for="depth">Profundidad</label><select id="depth"><option>Sintética</option><option selected>Intermedia</option><option>Profunda</option><option>Exhaustiva</option></select></div><div><label class="field-label" for="docStyle">Estilo editorial</label><select id="docStyle"><option>Académico minimalista</option><option>Manual editorial</option><option>Esquemático</option><option>Visual didáctico</option></select></div></div>
+            <label class="field-label" for="extraInstructions">Indicaciones adicionales</label>
+            <textarea id="extraInstructions" rows="3" placeholder="Restricciones, prioridades, fuentes permitidas, tono..."></textarea>
+            <div class="studio-generate-actions"><button class="button secondary" id="buildPrompt" type="button">Preparar prompt</button><button class="button primary" id="generateDoc" type="button">Generar borrador</button></div>
+          </div>
+          <div class="panel preview-panel studio-preview-panel">
+            <div class="studio-workspace-heading"><div class="panel-title"><span class="step">02</span><div><h2>Área de trabajo</h2><p>Revisá el prompt, editá el contenido y observá cómo queda en A4.</p></div></div><span class="studio-preview-state"><i></i> Vista actualizable</span></div>
+            <div class="tabbar"><button class="tab active" data-tab="prompt" type="button">Prompt ensamblado</button><button class="tab" data-tab="document" type="button">Documento y PDF</button></div>
+            <textarea id="promptOutput" class="editor-area" spellcheck="false" placeholder="El prompt ensamblado aparecerá aquí..."></textarea>
+            <div id="documentOutputWorkspace" class="document-output-workspace hidden">
+              <div class="document-text-editor">
+                <div class="document-editor-heading"><div><b>Contenido editable</b><small>Podés corregir o completar el texto antes de exportarlo.</small></div><span>EDITOR</span></div>
+                <textarea id="documentOutput" placeholder="El borrador o el texto generado aparecerá aquí."></textarea>
+              </div>
+              <div class="studio-document-preview-wrap">
+                <div class="studio-preview-meta"><div><b>Previsualización del PDF</b><small id="studioPreviewMeta">Formato A4 · Esperando contenido</small></div><span class="a4-mini-badge">A4</span></div>
+                <div id="studioDocumentPreview" class="studio-document-preview" aria-label="Previsualización del documento"></div>
+              </div>
+            </div>
+            <div class="preview-footer"><span id="studioStatus">Listo para comenzar.</span><div><button class="button ghost small" id="copyPrompt" type="button">Copiar prompt</button><button class="button primary small" id="saveProject" type="button">Guardar proyecto</button></div></div>
+            <div class="export-row"><button class="button secondary" id="exportHtml" type="button">Exportar HTML</button><button class="button secondary" id="printPdf" type="button">Imprimir / Guardar PDF</button><button class="button primary" id="buildStructuredDoc" type="button">Editor por secciones</button></div>
+            <div id="structuredEditor" class="structured-editor hidden">
+              <div class="structured-toolbar"><div><h3>Contenido por secciones</h3><p>Completá cada apartado de la maqueta. La vista A4 se actualiza con tus cambios.</p></div><div class="button-row"><button class="button secondary small" id="structuredExport" type="button">Exportar HTML</button><button class="button primary small" id="structuredPrint" type="button">Imprimir / PDF</button></div></div>
+              <div class="structured-layout"><div id="sectionEditors" class="section-editors"></div><div class="document-live-preview-wrap"><div class="preview-meta"><b>Vista de página</b><span>Actualización automática</span></div><div id="documentLivePreview" class="document-live-preview"></div></div></div>
+            </div>
+          </div>
+        </div>
       </section>
-      <section class="view" id="view-builder">
+<section class="view" id="view-builder">
         <div class="page-heading"><div><div class="eyebrow">DISEÑO MODULAR</div><h1>Constructor de modelos</h1><p>Diseñá una plantilla por componentes. La IA es opcional: el modelo guardado funciona por sí mismo.</p></div></div>
         <div class="model-workbench">
           <div class="panel model-config">
@@ -149,6 +183,15 @@
             <label class="field-label" for="promptRules">Reglas, prioridades o cosas que debe evitar</label>
             <textarea id="promptRules" rows="4" placeholder="Ej. Priorizar la explicación del profesor, no inventar información, conservar las distinciones conceptuales, señalar contradicciones y eliminar repeticiones sin perder contenido relevante."></textarea>
 
+            <div class="prompt-layout-chooser">
+              <label class="prompt-layout-toggle" for="promptUseLayout"><input type="checkbox" id="promptUseLayout"><span><b>Usar una maqueta PDF de DOCULAB</b><small>El prompt pedirá el contenido organizado según una plantilla de tu Biblioteca.</small></span></label>
+              <div class="prompt-layout-options hidden" id="promptLayoutOptions">
+                <label class="field-label" for="promptLayoutModel">Elegir maqueta</label>
+                <select id="promptLayoutModel"><option value="">Cargando maquetas…</option></select>
+                <div id="promptLayoutPreview" class="prompt-layout-preview" aria-live="polite"><span class="prompt-layout-empty">Seleccioná una maqueta para ver su estructura.</span></div>
+                <p class="prompt-layout-hint">La selección define portada lógica, orden y secciones. El diseño visual A4 se aplica después, dentro del estudio de documentos de DOCULAB.</p>
+              </div>
+            </div>
             <div class="prompt-form-actions">
               <button class="button primary" id="designPrompt" type="button"><span>✳</span> Generar prompt</button>
               <button class="button secondary" id="clearPromptLab" type="button">Limpiar campos</button>
