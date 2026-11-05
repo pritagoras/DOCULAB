@@ -56,7 +56,7 @@ function contentBlocks(text){
   const heading=line.match(/^(#{1,3})\s+(.+)$/);
   const bullet=line.match(/^[-*•]\s+(.+)$/);
   const ordered=line.match(/^\d+[.)]\s+(.+)$/);
-  if(heading){flushParagraph();flushList();blocks.push({kind:"subheading",html:"<h3>"+inline(heading[2])+"</h3>",weight:20});continue}
+  if(heading){flushParagraph();flushList();const level=heading[1].length;blocks.push({kind:level<=2?"section-heading":"subheading",html:level<=2?"<h2>"+inline(heading[2])+"</h2>":"<h3>"+inline(heading[2])+"</h3>",weight:level<=2?34:20});continue}
   if(bullet||ordered){
    flushParagraph();const type=bullet?"unordered":"ordered";
    if(list.length&&listType!==type)flushList();
