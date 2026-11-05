@@ -99,6 +99,8 @@ Para OpenAI o Gemini, elegir el proveedor correspondiente, ingresar la clave API
 - Importación y exportación JSON.
 - Carga de plantillas versionadas en Git.
 - Generación de documentos con proveedores IA configurados.
+- Selección opcional de una maqueta de la Biblioteca desde el generador de prompts, con transferencia de la misma plantilla al estudio documental.
+- Previsualización A4 multipágina con portada, encabezados, numeración y contenido editable antes de imprimir o guardar como PDF.
 - Exportación HTML e impresión / Guardar como PDF.
 - Interfaz con navegación por teclado (teclas 1–5 para cambiar de sección, Esc para cerrar la vista previa) y diseño adaptable a móvil.
 
