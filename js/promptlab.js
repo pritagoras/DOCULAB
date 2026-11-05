@@ -160,6 +160,7 @@
     $("#plFormalityLabel").textContent = ["Muy coloquial", "Cercana", "Neutra", "Formal", "Muy formal"][S.formality - 1];
   }
   function renderAll(){renderTasks();renderExamples();renderTones();renderFormats();renderRules();renderRecipes();renderLayoutOptions();syncFields();}
+  const layoutParts = model => Array.isArray(model?.components) ? model.components.filter(c=>c.enabled!==false).sort((a,b)=>(a.order??0)-(b.order??0)) : String(model?.structure||"").split(";").map((title,i)=>({title:title.trim(),instruction:""})).filter(c=>c.title);
   function renderLayoutOptions(){
     const select=$("#plLayoutModel"),items=window.DOCULAB_LIST_MODELS?window.DOCULAB_LIST_MODELS():[];
     if(!select)return;select.innerHTML='<option value="">Elegir una maqueta…</option>'+items.map(m=>'<option value="'+esc(m.id)+'">'+esc(m.name)+' · '+esc(m.category||"Personalizada")+'</option>').join("");
@@ -168,7 +169,7 @@
   function renderLayoutPreview(){
     const host=$("#plLayoutPreview"),m=window.DOCULAB_GET_MODEL?window.DOCULAB_GET_MODEL(S.layoutId):null;if(!host)return;
     if(!m){host.innerHTML='<span class="muted">Elegí una maqueta para ver su portada y estructura.</span>';return}
-    const parts=(m.components||[]).filter(c=>c.enabled!==false).sort((a,b)=>(a.order??0)-(b.order??0));
+    const parts=layoutParts(m);
     host.innerHTML='<div class="pl-layout-paper"><div class="pl-paper-brand">DOCULAB <small>DOCUMENT STUDIO</small></div><div class="pl-paper-kicker">'+esc(m.category||"DOCUMENTO")+'</div><b class="pl-paper-title">'+esc(m.name)+'</b><p class="pl-paper-subtitle">'+esc(m.description||"Documento académico")+'</p><div class="pl-paper-rule"></div><ol>'+parts.slice(0,7).map(c=>'<li>'+esc(c.title)+'</li>').join("")+'</ol></div><div class="pl-layout-caption"><b>'+esc(m.name)+'</b><span>'+parts.length+' secciones activas</span><p>'+esc(m.description||"Maqueta documental reutilizable.")+'</p></div>';
   }
 
@@ -196,7 +197,7 @@
     if (S.notes.trim()) out.push(`NOTAS ADICIONALES\n${S.notes.trim()}`);
 
     const layout = S.useLayout && window.DOCULAB_GET_MODEL ? window.DOCULAB_GET_MODEL(S.layoutId) : null;
-    if(layout){const parts=(layout.components||[]).filter(c=>c.enabled!==false).sort((a,b)=>(a.order??0)-(b.order??0));
+    if(layout){const parts=layoutParts(layout);
       out.push("MAQUETA DOCULAB: "+layout.name+"\nCategoría: "+(layout.category||"Personalizada")+"\nESTRUCTURA OBLIGATORIA:\n"+
       parts.map((c,i)=>(i+1)+". "+c.title+(c.instruction?" — "+c.instruction:"")).join("\n")+
       (layout.instructions?"\nInstrucciones generales: "+layout.instructions:"")+
