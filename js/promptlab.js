@@ -10,7 +10,7 @@
   if (!C || !root) return;
 
   const K_DRAFT = "promptlab_draft", K_RECIPES = "promptlab_recipes", K_CUSTOM = "promptlab_custom";
-  const blank = () => ({ task: "libre", goal: "", sources: "", output: "", depth: "Intermedia",
+  const blank = () => ({ task: "libre", goal: "", sources: "", output: "", depth: "Intermedia", layoutId: "", useLayout: false,
     tones: [], formality: 3, voice: "impersonal", variant: "rioplatense", rules: ["no-inventar"],
     formats: [], fewshot: "", notes: "" });
 
@@ -85,6 +85,7 @@
         <textarea id="plNotes" rows="2" placeholder="Cualquier otra indicación particular."></textarea>
       </section>
 
+<section class="pl-block pl-layout-block"><div class="pl-head"><h2>Maqueta del documento</h2><p>Elegí opcionalmente la estructura PDF en la que querés organizar el resultado.</p></div><label class="pl-layout-toggle"><input type="checkbox" id="plUseLayout"><span><b>Preparar el resultado para una maqueta PDF</b><small>El prompt respetará los títulos, el orden y las instrucciones de la plantilla elegida.</small></span></label><div id="plLayoutOptions" class="pl-layout-options hidden"><label class="field-label" for="plLayoutModel">Maqueta de la Biblioteca</label><select id="plLayoutModel"><option value="">Cargando maquetas…</option></select><div id="plLayoutPreview" class="pl-layout-preview"><span class="muted">Seleccioná una maqueta para ver una vista previa.</span></div><p class="muted pl-layout-note">La selección se conserva al enviar el prompt al estudio. Pegá allí la respuesta de la IA, distribuí el contenido por secciones y exportá el PDF A4.</p></div></section>
       <section class="pl-block pl-recipes">
         <div class="pl-head"><h2>Mis recetas</h2><p>Guardá esta configuración para reutilizarla.</p></div>
         <div id="plRecipes" class="pl-chips"></div>
@@ -155,9 +156,21 @@
     $("#plFewshot").value = S.fewshot; $("#plNotes").value = S.notes;
     $("#plVoice").value = S.voice; $("#plVariant").value = S.variant; $("#plDepth").value = S.depth;
     $("#plFormality").value = S.formality;
+    $("#plUseLayout").checked=!!S.useLayout;$("#plLayoutOptions").classList.toggle("hidden",!S.useLayout);$("#plLayoutModel").value=S.layoutId||"";renderLayoutPreview();
     $("#plFormalityLabel").textContent = ["Muy coloquial", "Cercana", "Neutra", "Formal", "Muy formal"][S.formality - 1];
   }
-  function renderAll() { renderTasks(); renderExamples(); renderTones(); renderFormats(); renderRules(); renderRecipes(); syncFields(); }
+  function renderAll(){renderTasks();renderExamples();renderTones();renderFormats();renderRules();renderRecipes();renderLayoutOptions();syncFields();}
+  function renderLayoutOptions(){
+    const select=$("#plLayoutModel"),items=window.DOCULAB_LIST_MODELS?window.DOCULAB_LIST_MODELS():[];
+    if(!select)return;select.innerHTML='<option value="">Elegir una maqueta…</option>'+items.map(m=>'<option value="'+esc(m.id)+'">'+esc(m.name)+' · '+esc(m.category||"Personalizada")+'</option>').join("");
+    select.value=items.some(m=>m.id===S.layoutId)?S.layoutId:"";if(!select.value)S.layoutId="";renderLayoutPreview();
+  }
+  function renderLayoutPreview(){
+    const host=$("#plLayoutPreview"),m=window.DOCULAB_GET_MODEL?window.DOCULAB_GET_MODEL(S.layoutId):null;if(!host)return;
+    if(!m){host.innerHTML='<span class="muted">Elegí una maqueta para ver su portada y estructura.</span>';return}
+    const parts=(m.components||[]).filter(c=>c.enabled!==false).sort((a,b)=>(a.order??0)-(b.order??0));
+    host.innerHTML='<div class="pl-layout-paper"><div class="pl-paper-brand">DOCULAB <small>DOCUMENT STUDIO</small></div><div class="pl-paper-kicker">'+esc(m.category||"DOCUMENTO")+'</div><b class="pl-paper-title">'+esc(m.name)+'</b><p class="pl-paper-subtitle">'+esc(m.description||"Documento académico")+'</p><div class="pl-paper-rule"></div><ol>'+parts.slice(0,7).map(c=>'<li>'+esc(c.title)+'</li>').join("")+'</ol></div><div class="pl-layout-caption"><b>'+esc(m.name)+'</b><span>'+parts.length+' secciones activas</span><p>'+esc(m.description||"Maqueta documental reutilizable.")+'</p></div>';
+  }
 
   /* ---------- Construcción de prompts ---------- */
   function blocks() {
@@ -181,6 +194,14 @@
     if (rules.length) out.push(`REGLAS\n${rules.map((r, i) => `${i + 1}. ${r.text}`).join("\n")}`);
     if (S.fewshot.trim()) out.push(`EJEMPLO DE SALIDA\nSeguí el formato y el estilo de este ejemplo. No copies su contenido.\n"""\n${S.fewshot.trim()}\n"""`);
     if (S.notes.trim()) out.push(`NOTAS ADICIONALES\n${S.notes.trim()}`);
+
+    const layout = S.useLayout && window.DOCULAB_GET_MODEL ? window.DOCULAB_GET_MODEL(S.layoutId) : null;
+    if(layout){const parts=(layout.components||[]).filter(c=>c.enabled!==false).sort((a,b)=>(a.order??0)-(b.order??0));
+      out.push("MAQUETA DOCULAB: "+layout.name+"\\nCategoría: "+(layout.category||"Personalizada")+"\\nESTRUCTURA OBLIGATORIA:\\n"+
+      parts.map((c,i)=>(i+1)+". "+c.title+(c.instruction?" — "+c.instruction:"")).join("\\n")+
+      (layout.instructions?"\\nInstrucciones generales: "+layout.instructions:"")+
+      "\\nUsá encabezados Markdown ## con los títulos exactos y ### para subsecciones. Respetá el orden. No omitas apartados activos. El resultado debe poder distribuirse en el editor por secciones de DOCULAB.");
+    }
     return out.join("\n\n");
   }
 
@@ -207,6 +228,8 @@ ${style.map(s => "- " + s).join("\n")}
 REGLAS Y PRIORIDADES:
 ${rules.length ? rules.map(r => "- " + r.text).join("\n") : "- No inventar información; distinguir lo respaldado por las fuentes de lo que no."}
 ${S.fewshot.trim() ? `\nEJEMPLO DE SALIDA DESEADA (incorporalo al prompt como modelo de formato y estilo, no de contenido):\n"""\n${S.fewshot.trim()}\n"""\n` : ""}${S.notes.trim() ? `\nNOTAS ADICIONALES:\n${S.notes.trim()}\n` : ""}
+${S.useLayout && window.DOCULAB_GET_MODEL && window.DOCULAB_GET_MODEL(S.layoutId) ? (() => { const m=window.DOCULAB_GET_MODEL(S.layoutId), p=(m.components||[]).filter(c=>c.enabled!==false).sort((a,b)=>(a.order??0)-(b.order??0)); return "MAQUETA DOCULAB: "+m.name+"\\nSecciones obligatorias en orden:\\n"+p.map((c,i)=>(i+1)+". "+c.title+(c.instruction?" — "+c.instruction:"")).join("\\n")+"\\nInstrucciones generales: "+(m.instructions||"")+"\\nEl prompt definitivo debe exigir encabezados Markdown ## con títulos exactos y contenido listo para distribuir en el editor por secciones de DOCULAB."; })() : ""}
+
 INSTRUCCIONES PARA VOS, DISEÑADOR DEL PROMPT:
 1. Convertí el brief en instrucciones operativas, precisas y sin ambigüedades.
 2. Definí el rol de la IA ejecutora, el objetivo, el procedimiento para cada material y cómo integrar las fuentes.
@@ -325,8 +348,16 @@ Devolvé únicamente el PROMPT DEFINITIVO, listo para copiar y usar, sin introdu
   $("#plNewTone").addEventListener("keydown", e => { if (e.key === "Enter") addCustom("tone"); });
   $("#plNewRule").addEventListener("keydown", e => { if (e.key === "Enter") addCustom("rule"); });
   $("#plSaveRecipe").onclick = saveRecipe; $("#plClear").onclick = clearAll; $("#plRefine").onclick = refine;
+  $("#plUseLayout").addEventListener("change",e=>{S.useLayout=e.target.checked;$("#plLayoutOptions").classList.toggle("hidden",!S.useLayout);update();});
+  $("#plLayoutModel").addEventListener("change",e=>{S.layoutId=e.target.value;update();renderLayoutPreview();});
+  window.addEventListener("doculab:templates-changed",renderLayoutOptions);
   $("#plCopy").onclick = () => copy(current());
-  $("#plToStudio").onclick = () => { go("studio"); $("#promptOutput").value = current(); tab("prompt"); $("#studioStatus").textContent = "Prompt transferido desde el Diseñador de prompts."; };
+  $("#plToStudio").onclick=()=>{
+    const chosen=S.useLayout&&S.layoutId&&window.DOCULAB_GET_MODEL?window.DOCULAB_GET_MODEL(S.layoutId):null;go("studio");
+    if(chosen){$("#studioModel").value=chosen.id;$("#studioModel").dispatchEvent(new Event("change",{bubbles:true}));$("#studioStatus").textContent="Prompt transferido con la maqueta «"+chosen.name+"» seleccionada. Pegá la respuesta de la IA y usá «Editor por secciones» para distribuirla.";}
+    else $("#studioStatus").textContent="Prompt transferido desde el Generador de prompts.";
+    $("#promptOutput").value=current();tab("prompt");
+  };
   $("#aiProvider").addEventListener("change", refineLabel);
   $$(".provider-card").forEach(c => c.addEventListener("click", () => setTimeout(refineLabel, 0)));
   document.addEventListener("keydown", e => {
