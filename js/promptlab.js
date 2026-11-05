@@ -242,7 +242,7 @@
       specialty ? "Especialidad o subcampo: " + specialty + "." : "",
       profileRole ? "Perfil profesional: " + profileRole + "." : "",
       "Abordaje: utilizá la terminología, los conceptos, los métodos y los criterios de análisis propios del área. Diferenciá escuelas, modelos o marcos teóricos cuando corresponda; no mezcles disciplinas ni atribuyas consensos donde existan debates."
-    ].filter(Boolean).join("\\n");
+    ].filter(Boolean).join("\n");
   }
 
   function buildDirect() {
