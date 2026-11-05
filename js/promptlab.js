@@ -248,7 +248,14 @@
       ? active + " activa" + (active === 1 ? "" : "s") + " · " + items.length + " guardada" + (items.length === 1 ? "" : "s")
       : "Opcional · 0 fuentes";
     host.innerHTML = items.length ? items.map(item => {
-      const excerpt = String(item.data?.overview || item.content || "").replace(/\s+/g, " ").trim().slice(0, 240);
+      const structuredPreview = item.data ? [
+        item.data.overview,
+        (item.data.concepts || []).length ? (item.data.concepts.length + " conceptos") : "",
+        (item.data.relationships || []).length ? (item.data.relationships.length + " relaciones") : "",
+        (item.data.authors_theories || []).length ? (item.data.authors_theories.length + " autores/teorías") : "",
+        (item.data.processes || []).length ? (item.data.processes.length + " procesos") : ""
+      ].filter(Boolean).join(" · ") : "";
+      const excerpt = String(structuredPreview || item.content || "").replace(/\s+/g, " ").trim().slice(0, 240);
       return '<article class="pl-context-item" data-context-item="' + esc(item.id) + '">' +
         '<div class="pl-context-item-main"><label class="pl-context-enable"><input type="checkbox" data-context-enabled="' + esc(item.id) + '"' + (item.enabled !== false ? " checked" : "") + '> <span></span></label>' +
         '<div class="pl-context-item-info"><b>' + esc(item.name || "Fuente sin nombre") + '</b><small>' + String(item.content || "").length.toLocaleString("es-AR") + ' caracteres · ' + (item.enabled !== false ? "Se incluirá" : "Excluida del prompt") + '</small><p>' + esc(excerpt) + (String(item.content || "").length > 240 ? "…" : "") + '</p></div></div>' +
