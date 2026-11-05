@@ -62,7 +62,7 @@ function renderOutputPreview(){
  }
  let body=raw.trim();
  const first=body.split("\n")[0]?.trim();
- if(first&&first.toLocaleLowerCase()===docTitle.toLocaleLowerCase())body=body.split("\n").slice(1).join("\n").trim();
+ if(first&&normalizeSectionHeading(first)===normalizeSectionHeading(docTitle))body=body.split("\n").slice(1).join("\n").trim();
  const blocks=contentBlocks(body),pages=paginate(blocks).length+1,words=raw.trim().split(/\s+/).length;
  host.innerHTML=renderPages(docTitle,blocks,"Contenido editable · "+modelName());
  updateMeta("#studioPreviewMeta",pages,words);
