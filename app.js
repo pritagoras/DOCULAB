@@ -90,7 +90,65 @@ function sampleDocumentHtml(m,sections){
 }
 const pdfSampleCss='@page{size:A4;margin:0}*{box-sizing:border-box}body{margin:0;background:#e9ebef;color:#202735;font-family:Georgia,serif}.pdf-sheet{width:210mm;min-height:297mm;height:297mm;margin:12px auto;background:white;position:relative;padding:25mm 24mm 23mm;page-break-after:always;overflow:hidden}.pdf-cover{display:flex;flex-direction:column;justify-content:space-between;padding:25mm 27mm}.pdf-brand{font:700 10pt Arial,sans-serif;letter-spacing:2px;color:#47556b}.pdf-brand span{display:block;margin-top:5px;font:8pt Arial;color:#98a1ae;letter-spacing:1.5px}.pdf-cover-center{margin-top:45mm}.pdf-overline{font:8pt Arial,sans-serif;letter-spacing:2px;color:#6475c8;text-transform:uppercase}.pdf-cover h1{font:700 30pt Arial,sans-serif;line-height:1.2;color:#182235;margin:14mm 0 8mm}.pdf-cover-center p{font:12pt/1.6 Georgia,serif;color:#697386;max-width:145mm}.pdf-cover-foot{display:flex;justify-content:space-between;border-top:1px solid #dfe3e9;padding-top:7mm;font:8pt Arial;color:#8791a0}.pdf-running-head{display:flex;justify-content:space-between;border-bottom:1px solid #e2e5eb;padding-bottom:5mm;font:7pt Arial;letter-spacing:1px;color:#8993a1}.pdf-sheet main{padding-top:12mm}.pdf-section{margin:0 0 12mm;break-inside:avoid}.pdf-section h2{font:700 16pt Arial,sans-serif;color:#202b40;margin:0 0 6mm;padding-bottom:3mm;border-bottom:1px solid #dfe3e9}.pdf-section h2 span{color:#6878c8}.pdf-section p,.pdf-section li,.pdf-section dd{font:10.5pt/1.75 Georgia,serif;color:#394456}.pdf-section p{margin:0 0 5mm}.pdf-section ul,.pdf-section ol{padding-left:7mm}.pdf-section blockquote{margin:7mm 0;padding:4mm 6mm;border-left:2px solid #6878c8;background:#f6f7fa;font:italic 10pt/1.6 Georgia;color:#596579}.pdf-section dl{display:grid;grid-template-columns:30mm 1fr;gap:4mm}.pdf-section dt{font:bold 10pt Arial;color:#29364d}.pdf-section dd{margin:0}.pdf-table{width:100%;border-collapse:collapse;font:9pt/1.5 Arial}.pdf-table th,.pdf-table td{border:1px solid #dfe3e9;padding:4mm;text-align:left;vertical-align:top}.pdf-table th{background:#f2f4f8;color:#33415a}.pdf-question{margin:0 0 7mm;padding-bottom:4mm;border-bottom:1px solid #e7e9ee}.pdf-question b{font:700 10pt Arial;color:#26334a}.pdf-question p{margin:3mm 0 0}.pdf-note{padding:5mm;background:#f6f7fa;color:#657084!important}.pdf-page-number{position:absolute;bottom:13mm;right:24mm;font:8pt Arial;color:#929baa}@media print{body{background:white}.pdf-sheet{margin:0;box-shadow:none}}';
 function printSample(m,sections){const html='<!doctype html><html lang="es"><head><meta charset="utf-8"><title>'+esc(m.name)+' · Muestra</title><style>'+pdfSampleCss+'</style></head><body>'+sampleDocumentHtml(m,sections)+'</body></html>';const win=window.open("","_blank");if(!win){toast("Permití las ventanas emergentes para generar el PDF de muestra.");return}win.document.open();win.document.write(html);win.document.close();win.onload=()=>{win.focus();win.print()}}
-function showModel(id){let m=models().find(x=>x.id===id);if(!m)return;activeId=id;const sections=modelSections(m);$("#modalContent").innerHTML='<div class="eyebrow">'+esc(m.category)+'</div><h2>'+esc(m.name)+'</h2><p>'+esc(m.description)+'</p><div class="pdf-preview-toolbar"><span>VISTA PREVIA · A4</span><button class="button secondary small" id="modalPrintSample">Imprimir / Guardar PDF</button></div><div class="model-modal-preview pdf-preview">'+sampleDocumentHtml(m,sections)+'</div><div class="modal-actions"><button class="button secondary" id="modalEdit">Editar modelo</button><button class="button secondary" id="modalCopy">Copiar instrucciones</button><button class="button primary" id="modalUse">Usar este modelo</button></div>';$("#modelModal").classList.remove("hidden");$("#closeModal").focus();$("#modalEdit").onclick=()=>editModel(id);$("#modalCopy").onclick=()=>copy(m.instructions||m.prompt||"");$("#modalUse").onclick=()=>{renderSelect();$("#studioModel").value=id;$("#modelModal").classList.add("hidden");go("studio")};$("#modalPrintSample").onclick=()=>printSample(m,sections)}
+function modelReferenceGalleryHtml(model){
+ const pages=Array.isArray(model.referencePages)?model.referencePages:[];
+ return '<section class="model-reference-gallery"><div class="model-reference-gallery-head"><div><b>Previews de referencia</b><small>Imágenes locales asociadas a esta maqueta para comparar su diseño real.</small></div><span>'+pages.length+'/3</span></div>'+
+ '<label class="button secondary small model-reference-upload" for="modalReferenceFiles">＋ Agregar imágenes locales<input id="modalReferenceFiles" type="file" accept="image/png,image/jpeg,image/webp" multiple></label>'+
+ '<small class="model-reference-local-note">Se guardan en este navegador y no se suben a GitHub ni se incorporan al PDF final. También podés importar páginas de un PDF desde el constructor del modelo.</small>'+
+ (pages.length?'<div class="reference-pdf-pages model-reference-pages">'+pages.map((p,i)=>'<figure class="reference-page"><img src="'+p.dataUrl+'" alt="'+esc(p.label||("Página "+(p.page||i+1)))+'"><figcaption>'+esc(p.label||("Página "+(p.page||i+1)))+'</figcaption><button class="text-button model-reference-remove" type="button" data-remove-reference="'+i+'">Quitar</button></figure>').join("")+'</div>':'<div class="model-reference-empty">Todavía no agregaste imágenes de referencia.</div>')+
+ '</section>';
+}
+function saveModelReferencePages(model,pages){
+ try{
+  const stored=JSON.parse(localStorage.getItem("doculab_templates")||"[]");
+  const index=stored.findIndex(item=>item.id===model.id);
+  if(index>=0){stored[index]={...stored[index],referencePages:pages,updated:new Date().toISOString()};}
+  else{
+   const components=(Array.isArray(model.components)?model.components:modelSections(model).map((c,i)=>({id:c.id||"section-"+i,title:c.title,description:c.description||"",instruction:c.instruction||"",preview:c.preview||"",enabled:c.enabled!==false,order:i}))).map((c,i)=>({...c,enabled:c.enabled!==false,order:c.order??i}));
+   stored.unshift({schema:"doculab.model/v1",id:model.id,name:model.name,category:model.category||"Personalizados",description:model.description||"",instructions:model.instructions||model.prompt||"",components,referencePages:pages,version:1,updated:new Date().toISOString()});
+  }
+  localStorage.setItem("doculab_templates",JSON.stringify(stored));
+  window.dispatchEvent(new CustomEvent("doculab:templates-changed"));
+  return true;
+ }catch(error){console.warn("No se pudieron guardar las previews locales",error);return false}
+}
+async function imageFileToReference(file){
+ if(!/^image\\/(png|jpeg|webp)$/i.test(file.type))throw new Error("Formato no compatible: "+file.name);
+ if(file.size>20*1024*1024)throw new Error("La imagen supera 20 MB: "+file.name);
+ const url=URL.createObjectURL(file),img=new Image();
+ try{
+  img.src=url;
+  if(img.decode)await img.decode();else await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error("No se pudo abrir "+file.name))});
+  const scale=Math.min(1,1400/img.naturalWidth,1800/img.naturalHeight),canvas=document.createElement("canvas");
+  canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+  const ctx=canvas.getContext("2d");if(!ctx)throw new Error("No se pudo procesar "+file.name);
+  ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  let dataUrl=canvas.toDataURL("image/jpeg",.78);
+  if(dataUrl.length>1100000)dataUrl=canvas.toDataURL("image/jpeg",.62);
+  canvas.width=canvas.height=1;
+  return {page:file.name,label:file.name,dataUrl};
+ }finally{URL.revokeObjectURL(url)}
+}
+async function addModelReferenceImages(id,files){
+ const model=models().find(item=>item.id===id);if(!model)return;
+ const pages=Array.isArray(model.referencePages)?model.referencePages.slice():[];
+ const room=3-pages.length;
+ if(room<=0){toast("Esta maqueta ya tiene 3 previews. Quitá una para agregar otra.");return}
+ const selected=Array.from(files||[]).slice(0,room);
+ if(!selected.length)return;
+ try{
+  for(const file of selected)pages.push(await imageFileToReference(file));
+  if(!saveModelReferencePages(model,pages)){toast("No hay espacio suficiente en el almacenamiento local.");return}
+  showModel(id);toast("Preview local guardada en esta maqueta");
+ }catch(error){toast(error.message||"No se pudo agregar la imagen")}
+}
+function showModel(id){
+ let m=models().find(x=>x.id===id);if(!m)return;activeId=id;const sections=modelSections(m);
+ $("#modalContent").innerHTML='<div class="eyebrow">'+esc(m.category)+'</div><h2>'+esc(m.name)+'</h2><p>'+esc(m.description)+'</p><div class="pdf-preview-toolbar"><span>VISTA PREVIA · A4</span><button class="button secondary small" id="modalPrintSample">Imprimir / Guardar PDF</button></div><div class="model-modal-preview pdf-preview">'+sampleDocumentHtml(m,sections)+'</div>'+modelReferenceGalleryHtml(m)+'<div class="modal-actions"><button class="button secondary" id="modalEdit">Editar modelo</button><button class="button secondary" id="modalCopy">Copiar instrucciones</button><button class="button primary" id="modalUse">Usar este modelo</button></div>';
+ $("#modelModal").classList.remove("hidden");$("#closeModal").focus();$("#modalEdit").onclick=()=>editModel(id);$("#modalCopy").onclick=()=>copy(m.instructions||m.prompt||"");$("#modalUse").onclick=()=>{renderSelect();$("#studioModel").value=id;$("#modelModal").classList.add("hidden");go("studio")};$("#modalPrintSample").onclick=()=>printSample(m,sections);
+ $("#modalReferenceFiles").onchange=async e=>{const files=e.target.files;await addModelReferenceImages(id,files);e.target.value=""};
+ $("#modalContent").onclick=e=>{const button=e.target.closest("[data-remove-reference]");if(!button)return;const fresh=models().find(item=>item.id===id);if(!fresh)return;const pages=(fresh.referencePages||[]).slice();pages.splice(Number(button.dataset.removeReference),1);if(saveModelReferencePages(fresh,pages)){showModel(id);toast("Preview quitada de la maqueta")}else toast("No se pudo actualizar el almacenamiento local")};
+}
 function copy(s){navigator.clipboard?.writeText(s).then(()=>toast("Copiado")).catch(()=>toast("No se pudo copiar"))}
 
 function promptLabBrief(){
