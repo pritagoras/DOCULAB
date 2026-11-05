@@ -85,7 +85,7 @@ Para OpenAI o Gemini, elegir el proveedor correspondiente, ingresar la clave API
 
 ## Alcance actual
 
-- Biblioteca inicial de modelos con preview de estructura y edición de cualquier modelo cargado, incluidos los modelos iniciales heredados.
+- Generador de prompts como pantalla inicial: plantillas rápidas, creación local de prompts completos y optimización opcional con IA.
 - Constructor modular con activar/desactivar y reordenar componentes.
 - Previsualización en tiempo real y propuesta de estructuras con IA.
 - Generación de una estructura documental editable sin IA.
@@ -100,6 +100,6 @@ Para OpenAI o Gemini, elegir el proveedor correspondiente, ingresar la clave API
 - Carga de plantillas versionadas en Git.
 - Generación de documentos con proveedores IA configurados.
 - Exportación HTML e impresión / Guardar como PDF.
-- Interfaz con navegación por teclado (teclas 1–4 para cambiar de sección, Esc para cerrar la vista previa) y diseño adaptable a móvil.
+- Interfaz con navegación por teclado (teclas 1–5 para cambiar de sección, Esc para cerrar la vista previa) y diseño adaptable a móvil.
 
 La importación directa de PDF/DOCX y la sincronización automática no están incluidas todavía.
