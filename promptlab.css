@@ -126,3 +126,35 @@
   .pl-context-library{padding:11px}
   .pl-context-library-head{display:grid}
 }
+
+
+/* Enriquecimiento de contexto plegable para no ocupar espacio cuando está inactivo */
+.pl-block.pl-enrichment-block{padding:9px 16px;border-top:1px solid var(--line)}
+.pl-enrichment-toggle{
+  display:flex;width:100%;align-items:center;justify-content:space-between;gap:14px;
+  padding:8px 2px;border:0;border-radius:8px;background:transparent;color:var(--ink);
+  text-align:left;cursor:pointer;font:inherit;min-width:0
+}
+.pl-enrichment-toggle:hover{background:var(--surface-2)}
+.pl-enrichment-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.pl-enrichment-toggle-copy{display:grid;gap:3px;min-width:0}
+.pl-enrichment-toggle-copy .pl-section-kicker{font-size:9px;margin:0}
+.pl-enrichment-toggle-copy>b{font-size:14px;font-weight:700;line-height:1.35}
+.pl-enrichment-toggle-copy>small{font-size:11px;line-height:1.4;color:var(--muted);font-weight:400}
+.pl-enrichment-toggle-meta{display:flex;align-items:center;gap:10px;flex:0 0 auto;color:var(--muted)}
+.pl-enrichment-toggle-meta>span:first-child{font:10px var(--font-mono);white-space:nowrap}
+.pl-enrichment-chevron{display:grid;place-items:center;width:26px;height:26px;border:1px solid var(--line);border-radius:50%;font-size:17px;line-height:1;transition:transform .18s ease,background .18s,border-color .18s}
+.pl-enrichment-toggle.is-open .pl-enrichment-chevron{transform:rotate(180deg);background:var(--accent-soft);border-color:var(--line-strong);color:var(--accent-ink)}
+.pl-enrichment-content{padding:10px 0 4px}
+.pl-enrichment-content[hidden]{display:none!important}
+/* En pantallas angostas los dos pasos se apilan; no fuerzan scroll horizontal. */
+.pl-enrichment-flow{grid-template-columns:minmax(0,1fr)}
+.pl-enrichment-card,.pl-enrichment-card>*{min-width:0}
+.pl-enrichment-card input,.pl-enrichment-card textarea{box-sizing:border-box;width:100%;max-width:100%}
+@media(max-width:560px){
+  .pl-block.pl-enrichment-block{padding:8px 12px}
+  .pl-enrichment-toggle{gap:8px}
+  .pl-enrichment-toggle-copy>small{max-width:34ch}
+  .pl-enrichment-toggle-meta{gap:6px}
+  .pl-enrichment-toggle-meta>span:first-child{font-size:9px}
+}
