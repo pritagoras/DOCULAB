@@ -1,11 +1,12 @@
 # DOCULAB
 
-**Document Studio** — biblioteca de modelos documentales modulares, reutilizables y versionables.
+**Prompt & Document Studio** — generador de prompts como pantalla principal y biblioteca de modelos documentales modulares, reutilizables y versionables.
 
 ## Concepto
 
-DOCULAB separa el diseño asistido por IA del uso cotidiano de los modelos:
+DOCULAB separa la generación de instrucciones, el diseño asistido por IA y el uso cotidiano de los modelos:
 
+- El generador de prompts es la pantalla inicial: transforma un brief en un prompt completo incluso sin conectar un proveedor. La IA opcional puede optimizarlo.
 - La IA puede proponer, revisar o ampliar una plantilla desde el constructor.
 - La plantilla se guarda como JSON y define sus componentes, orden, instrucciones, estado activo y, opcionalmente, textos de muestra por sección para personalizar su preview A4 y PDF de demostración.
 - Una plantilla guardada se puede abrir, previsualizar y utilizar sin conectarse a ningún modelo de lenguaje; DOCULAB puede generar su estructura vacía para completarla manualmente.
