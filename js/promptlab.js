@@ -353,6 +353,7 @@ Devolvé únicamente el PROMPT DEFINITIVO, listo para copiar y usar, sin introdu
   window.addEventListener("doculab:templates-changed",renderLayoutOptions);
   $("#plCopy").onclick = () => copy(current());
   $("#plToStudio").onclick=()=>{
+    if(S.useLayout&&!S.layoutId){say("Elegí una maqueta antes de enviar el prompt al estudio.");$("#plLayoutModel").focus();return}
     const chosen=S.useLayout&&S.layoutId&&window.DOCULAB_GET_MODEL?window.DOCULAB_GET_MODEL(S.layoutId):null;go("studio");
     if(chosen){$("#studioModel").value=chosen.id;$("#studioModel").dispatchEvent(new Event("change",{bubbles:true}));$("#studioStatus").textContent="Prompt transferido con la maqueta «"+chosen.name+"» seleccionada. Pegá la respuesta de la IA y usá «Editor por secciones» para distribuirla.";}
     else $("#studioStatus").textContent="Prompt transferido desde el Generador de prompts.";
