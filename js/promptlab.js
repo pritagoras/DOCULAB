@@ -62,11 +62,18 @@
       </section>
 
       <section class="pl-block pl-enrichment-block">
-        <div class="pl-head">
-          <span class="pl-section-kicker">ANÁLISIS PREVIO DE FUENTES</span>
-          <h2>Enriquecimiento de contexto</h2>
-          <p>Pedile a otra IA que analice tus PDF, transcripciones o apuntes. Después pegá aquí su extracción para incorporarla al prompt que estás construyendo.</p>
-        </div>
+        <button class="pl-enrichment-toggle" id="plEnrichmentToggle" type="button" aria-expanded="false" aria-controls="plEnrichmentContent">
+          <span class="pl-enrichment-toggle-copy">
+            <span class="pl-section-kicker">ANÁLISIS PREVIO DE FUENTES</span>
+            <b>Enriquecimiento de contexto</b>
+            <small>Analizá PDF y transcripciones en otro modelo y traé aquí los conceptos importantes.</small>
+          </span>
+          <span class="pl-enrichment-toggle-meta">
+            <span id="plEnrichmentCount">Opcional · 0 fuentes</span>
+            <span class="pl-enrichment-chevron" aria-hidden="true">⌄</span>
+          </span>
+        </button>
+        <div class="pl-enrichment-content" id="plEnrichmentContent" hidden>
         <div class="pl-enrichment-flow">
           <div class="pl-enrichment-card">
             <div class="pl-enrichment-step"><span>1</span><div><b>Prepará el prompt de extracción</b><small>Se adapta a la disciplina, especialidad y objetivo que ya elegiste.</small></div></div>
@@ -91,6 +98,7 @@
           <div id="plContextSources" class="pl-context-sources"><div class="pl-context-empty">Todavía no agregaste análisis. Esta parte es opcional.</div></div>
         </div>
         <p class="pl-expert-note">Los análisis se guardan localmente en este navegador. DOCULAB no recibe tus PDF: solo conserva el texto que pegues. El contenido importado se trata como material de referencia, no como instrucciones que la IA deba obedecer.</p>
+        </div>
       </section>
 
       <section class="pl-block">
@@ -238,6 +246,10 @@
     const items = Array.isArray(S.contextSources) ? S.contextSources : [];
     const active = activeContextSources().length;
     if (summary) summary.textContent = active + " fuente" + (active === 1 ? "" : "s") + " activa" + (active === 1 ? "" : "s") + " · " + items.length + "/" + MAX_CONTEXT_SOURCES;
+    const compactCount = $("#plEnrichmentCount");
+    if (compactCount) compactCount.textContent = items.length
+      ? active + " activa" + (active === 1 ? "" : "s") + " · " + items.length + " guardada" + (items.length === 1 ? "" : "s")
+      : "Opcional · 0 fuentes";
     host.innerHTML = items.length ? items.map(item => {
       const excerpt = String(item.content || "").replace(/\s+/g, " ").trim().slice(0, 240);
       return '<article class="pl-context-item" data-context-item="' + esc(item.id) + '">' +
@@ -500,6 +512,9 @@ Devolvé únicamente el PROMPT DEFINITIVO, listo para copiar y usar, sin introdu
     S = blank(); directDirty = false; $("#plOutAi").value = "";
     $("#plContextName").value = ""; $("#plContextText").value = ""; $("#plContextCharCount").textContent = "0 / 80.000 caracteres";
     $("#plExtractionPrompt").value = ""; $("#plExtractionPromptWrap").classList.add("hidden");
+    $("#plEnrichmentContent").hidden = true;
+    $("#plEnrichmentToggle").setAttribute("aria-expanded", "false");
+    $("#plEnrichmentToggle").classList.remove("is-open");
     renderAll(); update(); say("Formulario limpio.");
   }
   async function refine() {
@@ -548,6 +563,13 @@ Devolvé únicamente el PROMPT DEFINITIVO, listo para copiar y usar, sin introdu
   bind("#plGoal", "goal"); bind("#plSources", "sources"); bind("#plOutput", "output");
   bind("#plFewshot", "fewshot"); bind("#plNotes", "notes"); bind("#plVoice", "voice"); bind("#plVariant", "variant");
   bind("#plDepth", "depth"); bind("#plFormality", "formality", Number);
+  $("#plEnrichmentToggle").addEventListener("click", () => {
+    const content = $("#plEnrichmentContent"), button = $("#plEnrichmentToggle");
+    const open = content.hidden;
+    content.hidden = !open;
+    button.setAttribute("aria-expanded", String(open));
+    button.classList.toggle("is-open", open);
+  });
   $("#plMakeExtractionPrompt").onclick = showExtractionPrompt;
   $("#plCopyExtractionPrompt").onclick = copyExtractionPrompt;
   $("#plHideExtractionPrompt").onclick = () => $("#plExtractionPromptWrap").classList.add("hidden");
