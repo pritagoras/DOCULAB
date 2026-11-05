@@ -647,7 +647,7 @@ code{font:500 12px var(--font-mono);background:var(--surface-3);padding:2px 6px;
 :root[data-theme="dark"] .document-a4-page{box-shadow:0 3px 16px rgba(0,0,0,.35)}
 @media(max-width:1200px){.document-output-workspace{grid-template-columns:1fr}.studio-document-preview-wrap{position:static}#documentOutput{min-height:250px;max-height:420px}.studio-document-preview,.document-live-preview{max-height:760px}}
 @media(max-width:760px){.studio-format-chip{align-self:flex-start}.studio-workspace-heading{display:block}.studio-preview-state{margin:0 0 12px 41px}.document-output-workspace{grid-template-columns:1fr}.studio-document-preview,.document-live-preview{padding:7px;max-height:680px}.document-a4-page{width:100%;padding:10% 9% 10%}.doc-cover-center h1{font-size:clamp(19px,5vw,30px)}.doc-page-content h2{font-size:clamp(12px,3.2vw,17px)}.doc-page-content h3{font-size:clamp(10px,2.8vw,13px)}.doc-page-content p,.doc-page-content li{font-size:clamp(9px,2.4vw,12px)}.doc-page-footer{left:9%;right:9%}.studio-generate-actions .button{flex:1}}
-@media print{
+@media print{\n @page{size:A4;margin:0}
  .document-output-workspace:not(.hidden){display:block!important}
  .document-text-editor,.studio-preview-meta,.studio-workspace-heading,.preview-footer,.export-row,.studio-format-chip{display:none!important}
  .studio-document-preview,.document-live-preview{display:block!important;max-height:none!important;overflow:visible!important;padding:0!important;background:#fff!important}
