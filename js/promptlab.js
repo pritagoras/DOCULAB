@@ -31,7 +31,7 @@
   root.innerHTML = `
   <div class="page-heading"><div>
     <div class="eyebrow">INGENIERÍA DE PROMPTS</div><h1>Diseñador de prompts</h1>
-    <p>Elegí el tipo de trabajo, ajustá el tono y las reglas, y obtené un prompt listo para usar. Si querés, una IA lo refina.</p>
+    <p>Elegí primero la disciplina y el perfil experto; después definí el trabajo, el tono y las reglas. Obtené un prompt listo para usar o refinálo con IA.</p>
   </div></div>
   <div class="promptlab-layout pl2">
     <div class="panel promptlab-form">
