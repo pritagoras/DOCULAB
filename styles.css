@@ -217,6 +217,7 @@ input[type=checkbox]{width:16px;height:16px;padding:0;accent-color:var(--accent)
 .editable-section:focus-within{border-color:var(--accent)}
 .editable-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .editable-section-head>div{display:flex;align-items:center;gap:10px;min-width:0}
+.editable-section-head>.section-ai-actions{justify-content:flex-end;flex-wrap:wrap;gap:6px}
 .editable-section-head b{font:700 13px var(--font-ui)}
 .section-number{font:600 10.5px var(--font-mono);color:var(--accent-ink);background:var(--accent-soft);padding:5px 7px;border-radius:5px}
 .section-instruction{font-size:12px;line-height:1.55;color:var(--muted);margin:10px 0 0}

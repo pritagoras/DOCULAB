@@ -2,7 +2,7 @@
 "use strict";
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-let sections=[],title="";
+let sections=[],title="",previousVersions={};
 const templates=()=>{try{return JSON.parse(localStorage.getItem("doculab_templates")||"[]")}catch{return []}};
 function activeModel(){const id=$("#studioModel")?.value;return (window.DOCULAB_GET_MODEL&&window.DOCULAB_GET_MODEL(id))||templates().find(x=>x.id===id)||null}
 function notify(message){const t=$("#toast");if(t){t.textContent=message;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}}
@@ -142,7 +142,7 @@ function build(){
  const model=activeModel();let comps=(model?.components||[]).filter(c=>c.enabled!==false).sort((a,b)=>(a.order??0)-(b.order??0));
  if(!comps.length&&model?.structure)comps=String(model.structure).split(";").map((name,i)=>({id:"section-"+i,title:name.trim(),instruction:"Desarrollar esta sección con precisión y coherencia.",enabled:true,order:i})).filter(c=>c.title);
  if(!comps.length){notify("Este modelo no tiene componentes configurados.");return}
- title=$("#docTitle").value.trim()||model.name||"Documento sin título";
+ previousVersions={};title=$("#docTitle").value.trim()||model.name||"Documento sin título";
  sections=comps.map((c,i)=>({id:c.id||"section-"+i,title:c.title||"Sección "+(i+1),instruction:c.instruction||"",content:""}));
  const imported=importExistingDocument($("#documentOutput").value,comps);
  renderEditor();$("#documentOutputWorkspace").classList.add("hidden");$("#structuredEditor").classList.remove("hidden");
@@ -150,7 +150,7 @@ function build(){
 }
 function renderEditor(){
  const host=$("#sectionEditors");
- host.innerHTML=sections.map((s,i)=>'<section class="editable-section" data-section="'+i+'"><div class="editable-section-head"><div><span class="section-number">'+String(i+1).padStart(2,"0")+'</span><b>'+esc(s.title)+'</b></div><button class="button secondary small" data-generate="'+i+'" type="button">Generar sección con IA</button></div>'+(s.instruction?'<p class="section-instruction">'+esc(s.instruction)+'</p>':'')+'<textarea data-content="'+i+'" rows="7" placeholder="Escribí o pegá el contenido de '+esc(s.title.toLowerCase())+'...">'+esc(s.content)+'</textarea></section>').join("");
+ host.innerHTML=sections.map((s,i)=>'<section class="editable-section" data-section="'+i+'"><div class="editable-section-head"><div><span class="section-number">'+String(i+1).padStart(2,"0")+'</span><b>'+esc(s.title)+'</b></div><div class="section-ai-actions"><button class="button secondary small" data-generate="'+i+'" type="button">'+(s.content.trim()?"Regenerar sección":"Generar sección con IA")+'</button>'+(Object.prototype.hasOwnProperty.call(previousVersions,i)?'<button class="button ghost small" data-restore="'+i+'" type="button">Restaurar texto anterior</button>':'')+'</div></div>'+(s.instruction?'<p class="section-instruction">'+esc(s.instruction)+'</p>':'')+'<textarea data-content="'+i+'" rows="7" placeholder="Escribí o pegá el contenido de '+esc(s.title.toLowerCase())+'...">'+esc(s.content)+'</textarea></section>').join("");
  renderPreview();
 }
 function renderPreview(){
@@ -170,11 +170,11 @@ async function generateSection(index,button){
  const s=sections[index],provider=$("#aiProvider").value;if(!s)return;
  if(provider==="none"){notify("Configurá un proveedor en Settings para usar IA.");return}
  const model=activeModel(),endpoint=($("#aiEndpoint").value||"http://localhost:8000").replace(/\/+$/,"");
- const prompt='Redactá únicamente la sección "'+s.title+'" para el documento "'+title+'".\nInstrucción específica: '+(s.instruction||"Desarrollar la sección con rigor y claridad.")+'\nInstrucciones generales del modelo: '+(model?.instructions||model?.prompt||"")+'\nEstilo: '+$("#docStyle").value+'. Profundidad: '+$("#depth").value+'.\nIndicaciones adicionales: '+($("#extraInstructions").value||"Ninguna")+'\nMaterial fuente:\n'+(source()||"[No se proporcionó material]")+'\n\nReglas: no inventes datos, citas ni referencias. Si el material no alcanza, indicá qué falta. Entregá solo el contenido de esta sección.';
- const old=button.textContent;button.disabled=true;button.textContent="Generando…";
- try{const r=await fetch(endpoint+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({provider,model:$("#aiModel").value,prompt,api_key:""})});const data=await r.json();if(!r.ok)throw Error(data.detail||"HTTP "+r.status);sections[index].content=data.text||"";renderEditor();syncOutput();$("#studioStatus").textContent="Sección generada. Podés editarla antes de exportar."}
+ const oldContent=s.content.trim(),prompt='Redactá únicamente la sección "'+s.title+'" para el documento "'+title+'".\nInstrucción específica: '+(s.instruction||"Desarrollar la sección con rigor y claridad.")+'\nInstrucciones generales del modelo: '+(model?.instructions||model?.prompt||"")+'\nEstilo: '+$("#docStyle").value+'. Profundidad: '+$("#depth").value+'.\nIndicaciones adicionales: '+($("#extraInstructions").value||"Ninguna")+'\nMaterial fuente:\n'+(source()||"[No se proporcionó material]")+(oldContent?'\n\nTEXTO ACTUAL DE LA SECCIÓN (proponé una versión mejorada, sin perder información respaldada):\n'+oldContent:'')+'\n\nReglas: no inventes datos, citas ni referencias. Si el material no alcanza, indicá qué falta. Entregá solo el nuevo contenido de esta sección.';
+ button.disabled=true;button.textContent="Generando…";
+ try{const r=await fetch(endpoint+"/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({provider,model:$("#aiModel").value,prompt,api_key:""})});const data=await r.json();if(!r.ok)throw Error(data.detail||"HTTP "+r.status);const generated=String(data.text||data.response||"").trim();if(!generated)throw Error("El proveedor no devolvió texto.");if(oldContent)previousVersions[index]=oldContent;sections[index].content=generated;renderEditor();syncOutput();$("#studioStatus").textContent=oldContent?"Nueva versión generada. Podés editarla o restaurar el texto anterior.":"Sección generada. Podés editarla antes de exportar."}
  catch(e){notify("No se pudo generar: "+e.message)}
- finally{const current=$('[data-generate="'+index+'"]');if(current){current.disabled=false;current.textContent=old}}
+ finally{const current=$('[data-generate="'+index+'"]');if(current){current.disabled=false;current.textContent=sections[index]?.content.trim()?"Regenerar sección":"Generar sección con IA"}}
 }
 function init(){
  if(!$("#buildStructuredDoc"))return;
@@ -184,7 +184,7 @@ function init(){
  $("#documentOutput").addEventListener("input",renderOutputPreview);
  $("#studioModel").addEventListener("change",()=>{if(sections.length){$("#structuredEditor").classList.add("hidden");sections=[]}renderOutputPreview()});
  $("#sectionEditors").addEventListener("input",e=>{if(e.target.matches("[data-content]")){sections[Number(e.target.dataset.content)].content=e.target.value;syncOutput()}});
- $("#sectionEditors").addEventListener("click",e=>{const b=e.target.closest("[data-generate]");if(b)generateSection(Number(b.dataset.generate),b)});
+ $("#sectionEditors").addEventListener("click",e=>{const restore=e.target.closest("[data-restore]");if(restore){const i=Number(restore.dataset.restore);sections[i].content=previousVersions[i];delete previousVersions[i];renderEditor();syncOutput();$("#studioStatus").textContent="Se restauró el texto anterior de la sección.";return}const b=e.target.closest("[data-generate]");if(b)generateSection(Number(b.dataset.generate),b)});
  $("#docTitle").addEventListener("input",()=>{if(sections.length){title=$("#docTitle").value;renderPreview();syncOutput()}else renderOutputPreview()});
  $("#structuredPrint").addEventListener("click",()=>{syncOutput();window.print()});
  $("#structuredExport").addEventListener("click",()=>{syncOutput();const css='@page{size:A4;margin:0}*{box-sizing:border-box}body{margin:0;background:#eef0f4;color:#202735;font-family:Georgia,serif}.document-a4-page{width:210mm;height:297mm;min-height:297mm;position:relative;overflow:hidden;margin:10mm auto;background:#fff;padding:25mm 24mm 23mm;page-break-after:always}.doc-page-brand,.doc-running-head,.doc-page-footer,.doc-cover-footer{font:8pt Arial,sans-serif;color:#697386;letter-spacing:1px}.doc-cover-center{margin-top:47mm}.doc-cover-overline{font:8pt Arial;letter-spacing:2px;color:#6475c8}.doc-cover-center h1{font:700 30pt/1.2 Arial;margin:13mm 0 8mm}.doc-cover-center p,.doc-page-content p,.doc-page-content li{font:10.5pt/1.75 Georgia,serif}.doc-page-content h2{font:700 16pt Arial;border-bottom:1px solid #dfe3e9;padding-bottom:4mm}.doc-page-content h3{font:700 12pt Arial}.doc-page-content blockquote{border-left:2px solid #6878c8;padding:4mm 6mm;background:#f6f7fa}.doc-running-head{display:flex;justify-content:space-between;border-bottom:1px solid #dfe3e9;padding-bottom:5mm}.doc-page-content{padding-top:12mm}.doc-page-footer,.doc-cover-footer{position:absolute;bottom:13mm;left:24mm;right:24mm;display:flex;justify-content:space-between;border-top:1px solid #dfe3e9;padding-top:5mm}@media print{body{background:#fff}.document-a4-page{margin:0;box-shadow:none}}';const full='<!doctype html><html lang="es"><meta charset="utf-8"><title>'+esc(title)+'</title><style>'+css+'</style><body>'+$("#documentLivePreview").innerHTML+'</body></html>';const a=document.createElement("a"),u=URL.createObjectURL(new Blob([full],{type:"text/html"}));a.href=u;a.download=(title||"documento").replace(/[^\w-]+/g,"-")+".html";a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)});
